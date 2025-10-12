@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
@@ -21,7 +20,7 @@ const FaqItem: React.FC<FaqItemProps> = ({ title, children }) => {
                 <ChevronDownIcon className={`w-6 h-6 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 mt-4' : 'max-h-0'}`}>
-                 <div className="text-neutral-300">
+                 <div className="text-neutral-300 space-y-2">
                     {children}
                 </div>
             </div>
@@ -41,6 +40,15 @@ export const Faq: React.FC = () => {
                 </FaqItem>
                 <FaqItem title={t('faq_q2_title')}>
                    <p>{t('faq_q2_answer')}</p>
+                </FaqItem>
+                 <FaqItem title={t('faq_q3_title')}>
+                   <p>{t('faq_q3_answer')}</p>
+                </FaqItem>
+                 <FaqItem title={t('faq_q4_title')}>
+                   <p>{t('faq_q4_answer')}</p>
+                </FaqItem>
+                 <FaqItem title={t('faq_q5_title')}>
+                   <p>{t('faq_q5_answer')}</p>
                 </FaqItem>
             </div>
         </div>

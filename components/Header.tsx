@@ -1,25 +1,31 @@
 import React, { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { Language, Page } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
+import { UserCircleIcon } from './icons/UserCircleIcon';
+import { LogoutIcon } from './icons/LogoutIcon';
 
 interface HeaderProps {
     setPage: (page: Page) => void;
     currentPage: Page;
+    onLoginClick: () => void;
 }
 
 const FrFlag = () => <span className="text-xl">🇫🇷</span>;
 const EnFlag = () => <span className="text-xl">🇬🇧</span>;
 
-export const Header: React.FC<HeaderProps> = ({ setPage, currentPage }) => {
+export const Header: React.FC<HeaderProps> = ({ setPage, currentPage, onLoginClick }) => {
     const { t, language, setLanguage } = useTranslations();
+    const { user, logout } = useAuth();
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
-    const navItems: { page: Page; label: string }[] = [
-        { page: 'generator', label: t('nav_generator') },
-        { page: 'explore', label: t('nav_explore') },
-        { page: 'dashboard', label: t('nav_dashboard') },
-        { page: 'faq', label: t('nav_faq') },
+    const navItems: { page: Page; label: string; authRequired: boolean }[] = [
+        { page: 'generator', label: t('nav_generator'), authRequired: false },
+        { page: 'explore', label: t('nav_explore'), authRequired: false },
+        { page: 'dashboard', label: t('nav_dashboard'), authRequired: true },
+        { page: 'faq', label: t('nav_faq'), authRequired: false },
     ];
 
     const handleLanguageChange = (lang: Language) => {
@@ -35,16 +41,19 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage }) => {
                         Kora<span className="text-brand-primary">Prompt</span>
                     </button>
                     <ul className="hidden md:flex items-center space-x-6">
-                        {navItems.map(item => (
-                            <li key={item.page}>
-                                <button
-                                    onClick={() => setPage(item.page)}
-                                    className={`text-neutral-200 hover:text-brand-primary transition-colors duration-200 ${currentPage === item.page ? 'text-brand-primary font-semibold' : ''}`}
-                                >
-                                    {item.label}
-                                </button>
-                            </li>
-                        ))}
+                        {navItems.map(item => {
+                            if (item.authRequired && !user) return null;
+                            return (
+                                <li key={item.page}>
+                                    <button
+                                        onClick={() => setPage(item.page)}
+                                        className={`text-neutral-200 hover:text-brand-primary transition-colors duration-200 ${currentPage === item.page ? 'text-brand-primary font-semibold' : ''}`}
+                                    >
+                                        {item.label}
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -64,9 +73,26 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage }) => {
                             </div>
                         )}
                     </div>
-                    <button className="bg-brand-primary text-white px-4 py-2 rounded-md font-semibold hover:bg-brand-secondary transition-colors duration-200">
-                        {t('login_button')}
-                    </button>
+                    {user ? (
+                        <div className="relative">
+                            <button onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)} className="p-2 rounded-full hover:bg-neutral-800 transition-colors">
+                                <UserCircleIcon className="w-6 h-6 text-neutral-300" />
+                            </button>
+                             {isUserDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-neutral-800 rounded-md shadow-lg py-1">
+                                    <div className="px-4 py-2 text-sm text-neutral-400 border-b border-neutral-700">{user.email}</div>
+                                    <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">
+                                        <LogoutIcon className="w-4 h-4" />
+                                        <span>{t('logout_button')}</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                         <button onClick={onLoginClick} className="bg-brand-primary text-white px-4 py-2 rounded-md font-semibold hover:bg-brand-secondary transition-colors duration-200">
+                            {t('login_button')}
+                        </button>
+                    )}
                 </div>
             </nav>
         </header>

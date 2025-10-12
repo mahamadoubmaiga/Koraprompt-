@@ -1,37 +1,57 @@
 import React, { useState } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { DataProvider } from './contexts/DataContext';
 import { Header } from './components/Header';
 import { HomePage } from './components/HomePage';
 import { PromptGenerator } from './components/PromptGenerator';
 import { ExplorePage } from './components/ExplorePage';
 import { Dashboard } from './components/Dashboard';
 import { Faq } from './components/Faq';
-import { Page } from './types';
-
+import { Page, RemixState } from './types';
+import { AuthModal } from './components/AuthModal';
 
 const AppContent: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<Page>('home');
+    const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+    const [remixState, setRemixState] = useState<RemixState | null>(null);
+    const { user } = useAuth();
+
+    const handleSetPage = (page: Page) => {
+        // If user is not logged in and tries to access dashboard, open login modal
+        if (!user && page === 'dashboard') {
+            setAuthModalOpen(true);
+            return;
+        }
+        setRemixState(null); // Clear remix state on page change
+        setCurrentPage(page);
+    };
+    
+    const handleRemix = (remixData: RemixState) => {
+        setRemixState(remixData);
+        setCurrentPage('generator');
+    }
 
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage setPage={setCurrentPage} />;
+                return <HomePage setPage={handleSetPage} />;
             case 'generator':
-                return <PromptGenerator />;
+                return <PromptGenerator remixState={remixState} clearRemixState={() => setRemixState(null)} />;
             case 'explore':
-                return <ExplorePage />;
+                return <ExplorePage onRemix={handleRemix} />;
             case 'dashboard':
-                return <Dashboard />;
+                return user ? <Dashboard /> : <HomePage setPage={handleSetPage} />;
             case 'faq':
                 return <Faq />;
             default:
-                return <HomePage setPage={setCurrentPage} />;
+                return <HomePage setPage={handleSetPage} />;
         }
     }
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header setPage={setCurrentPage} currentPage={currentPage} />
+            <Header setPage={handleSetPage} currentPage={currentPage} onLoginClick={() => setAuthModalOpen(true)} />
             <main className="flex-grow">
                 {renderPage()}
             </main>
@@ -40,6 +60,7 @@ const AppContent: React.FC = () => {
                     &copy; {new Date().getFullYear()} KoraPrompt. All rights reserved.
                 </div>
             </footer>
+            {isAuthModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} />}
         </div>
     );
 };
@@ -48,7 +69,11 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <LanguageProvider>
-      <AppContent />
+      <AuthProvider>
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
+      </AuthProvider>
     </LanguageProvider>
   );
 };

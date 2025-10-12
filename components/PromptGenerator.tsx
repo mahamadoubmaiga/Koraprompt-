@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
-import { PromptType, SavedPrompt } from '../types';
+import { PromptType, SavedPrompt, RemixState, Preset } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 import { GENERATORS, VIDEO_CATEGORIES, IMAGE_CATEGORIES, SURPRISE_ME_IDEAS } from '../constants';
 import { generatePrompts, generateImageFromPrompt, generatePromptFromImage } from '../services/geminiService';
 import { ClipboardIcon } from './icons/ClipboardIcon';
@@ -9,8 +11,16 @@ import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { PhotoIcon } from './icons/PhotoIcon';
 
-export const PromptGenerator: React.FC = () => {
+interface PromptGeneratorProps {
+    remixState: RemixState | null;
+    clearRemixState: () => void;
+}
+
+export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, clearRemixState }) => {
     const { t, language } = useTranslations();
+    const { user } = useAuth();
+    const { presets, addPreset } = useData();
+
     const [activeTab, setActiveTab] = useState<PromptType>('video');
     const [mode, setMode] = useState<'single' | 'sequence'>('single');
     const [userInput, setUserInput] = useState('');
@@ -33,6 +43,17 @@ export const PromptGenerator: React.FC = () => {
     const [aspectRatio, setAspectRatio] = useState('1:1');
     const [promptCount, setPromptCount] = useState(3);
     const [refinementInput, setRefinementInput] = useState('');
+    const [newPresetName, setNewPresetName] = useState('');
+
+    useEffect(() => {
+        if (remixState) {
+            setActiveTab(remixState.type);
+            setUserInput(remixState.userInput);
+            setSelectedGenerator(remixState.generator);
+            // Additional settings from remix could be applied here
+            clearRemixState();
+        }
+    }, [remixState, clearRemixState]);
 
     const resetGenerationState = () => {
         setGeneratedPrompts([]);
@@ -85,10 +106,14 @@ export const PromptGenerator: React.FC = () => {
     const handleGenerate = () => performGeneration(userInput);
 
     const handleRefine = () => {
-        if (!refinementInput.trim()) return;
-        const combinedInput = `${userInput}. ${refinementInput}`;
-        setUserInput(combinedInput);
-        performGeneration(combinedInput);
+        if (!refinementInput.trim() || generatedPrompts.length === 0) return;
+        
+        // This is where version history would be created.
+        // The save function now handles versioning.
+        
+        const refinedIdea = `${userInput} (Refinement: ${refinementInput})`;
+        setUserInput(refinedIdea); // Update the main idea to reflect the refinement
+        performGeneration(refinedIdea);
         setRefinementInput('');
     };
 
@@ -138,7 +163,6 @@ export const PromptGenerator: React.FC = () => {
             setGeneratedImageData(imageData);
         } catch (error) {
             console.error(error);
-            // Handle error display if needed
         }
         setIsGeneratingImage(false);
     };
@@ -149,21 +173,57 @@ export const PromptGenerator: React.FC = () => {
         setTimeout(() => setCopiedIndex(null), 2000);
     };
 
+    const { addPrompt } = useData();
     const handleSave = () => {
-        if (generatedPrompts.length === 0) return;
-        const savedPrompts: SavedPrompt[] = JSON.parse(localStorage.getItem('kora-prompts') || '[]');
-        const newPrompt: SavedPrompt = {
-            id: new Date().toISOString(),
+        if (generatedPrompts.length === 0 || !user) {
+             alert('You must be logged in to save prompts.');
+            return;
+        }
+        
+        const newPrompt: Omit<SavedPrompt, 'id'> = {
             type: activeTab,
             prompts: generatedPrompts,
+            versions: [{ prompts: generatedPrompts, date: new Date().toISOString() }],
             generator: selectedGenerator,
             userInput: userInput,
-            projectName: userInput.substring(0, 70),
-            date: new Date().toLocaleDateString(),
+            projectName: userInput.substring(0, 70) || "Untitled Project",
+            date: new Date().toISOString(),
             ...(generatedImageData && { generatedImage: generatedImageData }),
+            userId: user.id,
+            folderId: null,
+            isPublished: false,
         };
-        localStorage.setItem('kora-prompts', JSON.stringify([newPrompt, ...savedPrompts]));
+        addPrompt(newPrompt);
         alert('Prompt saved to dashboard!');
+    };
+
+    const handleSavePreset = () => {
+        if (!newPresetName.trim() || !user) return;
+        const newPreset: Omit<Preset, 'id' | 'userId'> = {
+            name: newPresetName,
+            settings: {
+                generator: selectedGenerator,
+                category: selectedCategory,
+                negativePrompt,
+                creativity,
+                aspectRatio,
+            }
+        };
+        addPreset(newPreset);
+        setNewPresetName('');
+    };
+
+    const applyPreset = (preset: Preset) => {
+        const { generator, category, negativePrompt, creativity, aspectRatio } = preset.settings;
+        const gen = GENERATORS.find(g => g.id === generator);
+        if (gen) {
+            setActiveTab(gen.type);
+            setSelectedGenerator(gen.id);
+        }
+        setSelectedCategory(category);
+        setNegativePrompt(negativePrompt);
+        setCreativity(creativity);
+        setAspectRatio(aspectRatio);
     };
 
     const currentGenerators = GENERATORS.filter(g => g.type === activeTab);
@@ -252,7 +312,7 @@ export const PromptGenerator: React.FC = () => {
                     </div>
 
                     {showAdvanced && (
-                        <div className="bg-neutral-800/50 p-4 rounded-lg space-y-6 border border-neutral-700 animate-fade-in">
+                        <div className="bg-neutral-800/50 p-4 rounded-lg space-y-6 border border-neutral-700">
                              <div>
                                 <label htmlFor="negative-prompt" className="block text-sm font-medium text-neutral-300 mb-2">{t('negative_prompt_label')}</label>
                                 <textarea
@@ -286,6 +346,20 @@ export const PromptGenerator: React.FC = () => {
                                     </div>
                                 )}
                             </div>
+                             {user && <div className="border-t border-neutral-700 pt-4">
+                                <label className="block text-sm font-medium text-neutral-300 mb-2">{t('presets_label')}</label>
+                                <div className="space-y-2">
+                                    {presets.length > 0 ? (
+                                        <div className="flex flex-wrap gap-2">
+                                            {presets.map(p => <button key={p.id} onClick={() => applyPreset(p)} className="bg-neutral-700 text-sm px-3 py-1 rounded-md hover:bg-brand-secondary">{p.name}</button>)}
+                                        </div>
+                                    ) : <p className="text-sm text-neutral-500">{t('presets_none')}</p>}
+                                    <div className="flex items-center space-x-2 pt-2">
+                                        <input type="text" value={newPresetName} onChange={e => setNewPresetName(e.target.value)} placeholder={t('preset_name_placeholder')} className="w-full bg-neutral-900 border border-neutral-600 rounded-md p-2 text-white text-sm focus:ring-brand-primary focus:border-brand-primary transition" />
+                                        <button onClick={handleSavePreset} className="bg-brand-primary text-white px-3 py-2 rounded-md font-semibold text-sm hover:bg-brand-secondary whitespace-nowrap">{t('save_button')}</button>
+                                    </div>
+                                </div>
+                            </div>}
                         </div>
                     )}
                     
@@ -339,8 +413,8 @@ export const PromptGenerator: React.FC = () => {
                                 </div>
                                 
                                 <div className="mt-6 flex items-center justify-between">
-                                     <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors font-semibold">
-                                        {t('save_to_dashboard')}
+                                     <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors font-semibold disabled:opacity-50" disabled={!user}>
+                                        {user ? t('save_to_dashboard') : t('login_button') + ' to save'}
                                     </button>
                                 </div>
                             )}
