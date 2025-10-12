@@ -1,0 +1,5 @@
+{
+  "name": "KoraPrompt",
+  "description": "KoraPrompt is a multilingual SaaS platform for generating, customizing, and exporting optimized prompts for major AI video and image generators. It offers AI-assisted creation, templates, and generator-specific syntax.",
+  "requestFramePermissions": []
+}
