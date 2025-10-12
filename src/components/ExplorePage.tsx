@@ -1,19 +1,26 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { useData } from '../contexts/DataContext';
-import { Template, PromptType, SavedPrompt, RemixState } from '../types';
+import { PromptType, SavedPrompt, RemixState, User } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { RemixIcon } from './icons/RemixIcon';
+import { HeartIcon } from './icons/HeartIcon';
 
 interface ExploreCardProps {
     prompt: SavedPrompt;
     onRemix: (remixData: RemixState) => void;
+    onToggleLike: (promptId: string) => void;
+    currentUser: User | null;
+    onLoginClick: () => void;
 }
 
-const ExploreCard: React.FC<ExploreCardProps> = ({ prompt, onRemix }) => {
+const ExploreCard: React.FC<ExploreCardProps> = ({ prompt, onRemix, onToggleLike, currentUser, onLoginClick }) => {
     const { t } = useTranslations();
     const [isCopied, setIsCopied] = useState(false);
+    
+    const hasLiked = currentUser ? prompt.likedBy.includes(currentUser.id) : false;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(prompt.prompts.join('\n\n'));
@@ -32,6 +39,14 @@ const ExploreCard: React.FC<ExploreCardProps> = ({ prompt, onRemix }) => {
         });
     }
 
+    const handleLikeClick = () => {
+        if (!currentUser) {
+            onLoginClick();
+            return;
+        }
+        onToggleLike(prompt.id);
+    };
+
     return (
         <div className="bg-neutral-800 rounded-lg border border-neutral-700 flex flex-col justify-between overflow-hidden group">
             <div className="relative">
@@ -45,10 +60,13 @@ const ExploreCard: React.FC<ExploreCardProps> = ({ prompt, onRemix }) => {
                 </div>
                 <div className="flex justify-between items-center mt-auto pt-2">
                     <span className="text-xs text-neutral-500">{prompt.generator}</span>
-                     <div className="flex items-center space-x-4">
+                     <div className="flex items-center space-x-3">
+                        <button onClick={handleLikeClick} title={t('like_button')} className={`flex items-center text-sm space-x-1.5 transition-colors ${hasLiked ? 'text-red-500' : 'text-neutral-300 hover:text-red-400'}`}>
+                            <HeartIcon filled={hasLiked} className="w-5 h-5" />
+                            <span className="font-semibold">{prompt.likes}</span>
+                        </button>
                         <button onClick={handleRemix} title={t('remix_button')} className="flex items-center text-sm space-x-2 text-neutral-300 hover:text-brand-primary transition-colors">
                             <RemixIcon className="w-4 h-4" />
-                            <span>{t('remix_button')}</span>
                         </button>
                         <button onClick={handleCopy} title={t('copy_button')} className="flex items-center text-sm space-x-2 text-neutral-300 hover:text-brand-primary transition-colors">
                             {isCopied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
@@ -62,11 +80,13 @@ const ExploreCard: React.FC<ExploreCardProps> = ({ prompt, onRemix }) => {
 
 interface ExplorePageProps {
     onRemix: (remixData: RemixState) => void;
+    onLoginClick: () => void;
 }
 
-export const ExplorePage: React.FC<ExplorePageProps> = ({ onRemix }) => {
+export const ExplorePage: React.FC<ExplorePageProps> = ({ onRemix, onLoginClick }) => {
     const { t } = useTranslations();
-    const { publicPrompts } = useData();
+    const { user } = useAuth();
+    const { publicPrompts, toggleLikePrompt } = useData();
     const [filter, setFilter] = useState<'all' | PromptType>('all');
     
     const filteredPrompts = useMemo(() => publicPrompts.filter(template => filter === 'all' || template.type === filter), [publicPrompts, filter]);
@@ -89,7 +109,14 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onRemix }) => {
             {filteredPrompts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredPrompts.map(prompt => (
-                        <ExploreCard key={prompt.id} prompt={prompt} onRemix={onRemix} />
+                        <ExploreCard 
+                            key={prompt.id} 
+                            prompt={prompt} 
+                            onRemix={onRemix}
+                            onToggleLike={toggleLikePrompt}
+                            currentUser={user}
+                            onLoginClick={onLoginClick}
+                        />
                     ))}
                 </div>
             ) : (

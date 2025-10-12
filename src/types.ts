@@ -49,6 +49,8 @@ export interface SavedPrompt {
   userId: string | null;
   folderId: string | null;
   isPublished: boolean;
+  likes: number;
+  likedBy: string[];
 }
 
 export interface Generator {
@@ -67,4 +69,4 @@ export interface Template {
     imageUrl: string;
 }
 
-export type RemixState = Omit<SavedPrompt, 'id' | 'date' | 'userId' | 'folderId' | 'isPublished' | 'versions'>;
+export type RemixState = Omit<SavedPrompt, 'id' | 'date' | 'userId' | 'folderId' | 'isPublished' | 'versions' | 'likes' | 'likedBy'>;

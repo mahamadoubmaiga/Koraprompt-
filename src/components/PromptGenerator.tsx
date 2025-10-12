@@ -193,6 +193,9 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
             userId: user.id,
             folderId: null,
             isPublished: false,
+            // Fix: Add missing properties 'likes' and 'likedBy' to satisfy the SavedPrompt type.
+            likes: 0,
+            likedBy: [],
         };
         addPrompt(newPrompt);
         alert('Prompt saved to dashboard!');

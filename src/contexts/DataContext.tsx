@@ -12,12 +12,25 @@ interface DataContextType {
   deletePrompt: (id: string) => void;
   addFolder: (folder: Omit<Folder, 'id'>) => void;
   addPreset: (preset: Omit<Preset, 'id' | 'userId'>) => void;
+  toggleLikePrompt: (promptId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// Helper functions to interact with localStorage
-const getStorage = <T,>(key: string): T[] => JSON.parse(localStorage.getItem(key) || '[]');
+const migratePrompt = (p: any): SavedPrompt => ({
+  ...p,
+  likes: p.likes ?? 0,
+  likedBy: p.likedBy ?? [],
+});
+
+const getStorage = <T,>(key: string): T[] => {
+    const item = localStorage.getItem(key);
+    const data = item ? JSON.parse(item) : [];
+    if (key === 'kora-prompts') {
+        return data.map(migratePrompt);
+    }
+    return data;
+};
 const setStorage = <T,>(key: string, data: T[]) => localStorage.setItem(key, JSON.stringify(data));
 
 
@@ -51,7 +64,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [allPrompts]);
 
   const addPrompt = (promptData: Omit<SavedPrompt, 'id'>) => {
-    const newPrompt = { ...promptData, id: `prompt_${Date.now()}` };
+    const newPrompt: SavedPrompt = { 
+      ...(promptData as Omit<SavedPrompt, 'id' | 'likes' | 'likedBy'>), 
+      id: `prompt_${Date.now()}`,
+      likes: 0,
+      likedBy: [],
+    };
     const updatedPrompts = [newPrompt, ...allPrompts];
     setAllPrompts(updatedPrompts);
     setStorage('kora-prompts', updatedPrompts);
@@ -85,9 +103,38 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setStorage('kora-presets', updatedPresets);
       setPresets(prev => [newPreset, ...prev]);
   };
+
+  const toggleLikePrompt = (promptId: string) => {
+    if (!user) {
+        console.error("User must be logged in to like a prompt.");
+        return;
+    }
+    const updatedAllPrompts = allPrompts.map(p => {
+        if (p.id === promptId) {
+            const alreadyLiked = p.likedBy.includes(user.id);
+            if (alreadyLiked) {
+                return {
+                    ...p,
+                    likes: Math.max(0, p.likes - 1),
+                    likedBy: p.likedBy.filter(id => id !== user.id)
+                };
+            } else {
+                return {
+                    ...p,
+                    likes: p.likes + 1,
+                    likedBy: [...p.likedBy, user.id]
+                };
+            }
+        }
+        return p;
+    });
+
+    setAllPrompts(updatedAllPrompts);
+    setStorage('kora-prompts', updatedAllPrompts);
+  };
   
   return (
-    <DataContext.Provider value={{ userPrompts, publicPrompts, folders, presets, addPrompt, updatePrompt, deletePrompt, addFolder, addPreset }}>
+    <DataContext.Provider value={{ userPrompts, publicPrompts, folders, presets, addPrompt, updatePrompt, deletePrompt, addFolder, addPreset, toggleLikePrompt }}>
       {children}
     </DataContext.Provider>
   );

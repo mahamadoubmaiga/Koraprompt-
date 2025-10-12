@@ -39,7 +39,7 @@ const AppContent: React.FC = () => {
             case 'generator':
                 return <PromptGenerator remixState={remixState} clearRemixState={() => setRemixState(null)} />;
             case 'explore':
-                return <ExplorePage onRemix={handleRemix} />;
+                return <ExplorePage onRemix={handleRemix} onLoginClick={() => setAuthModalOpen(true)} />;
             case 'dashboard':
                 return user ? <Dashboard /> : <HomePage setPage={handleSetPage} />;
             case 'faq':

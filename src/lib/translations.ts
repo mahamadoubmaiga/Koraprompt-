@@ -69,6 +69,7 @@ export const translations = {
     explore_title: 'Explore & Discover Prompts',
     explore_subtitle: 'Browse our curated collection of creations from the community for inspiration.',
     remix_button: 'Remix',
+    like_button: 'Like',
     // Dashboard Page
     dashboard_title: 'My Saved Prompts',
     dashboard_empty: 'You haven\'t saved any prompts yet. Start by using the generator!',
@@ -193,6 +194,7 @@ export const translations = {
     explore_title: 'Explorer & Découvrir des Prompts',
     explore_subtitle: 'Parcourez notre collection de créations de la communauté pour trouver l\'inspiration.',
     remix_button: 'Remixer',
+    like_button: 'Aimer',
     // Dashboard Page
     dashboard_title: 'Mes Prompts Sauvegardés',
     dashboard_empty: 'Vous n\'avez encore sauvegardé aucun prompt. Commencez par utiliser le générateur !',
