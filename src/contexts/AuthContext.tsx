@@ -19,8 +19,8 @@ const mockAuthService = {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string) => void;
-  signup: (email: string) => void;
+  login: (email: string) => Promise<void>;
+  signup: (email: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -40,21 +40,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(false);
   }, []);
 
-  const login = (email: string) => {
+  const login = async (email: string) => {
     const existingUser = mockAuthService.getUser(email);
     if (existingUser) {
       setUser(existingUser);
       sessionStorage.setItem('kora-session', JSON.stringify(existingUser));
     } else {
-      alert('User not found. Please sign up.');
+      throw new Error('User not found. Please sign up.');
     }
   };
 
-  const signup = (email: string) => {
+  const signup = async (email: string) => {
     let existingUser = mockAuthService.getUser(email);
     if (existingUser) {
-      alert('User already exists. Please log in.');
-      return;
+      throw new Error('User already exists. Please log in.');
     }
     const newUser = mockAuthService.createUser(email);
     setUser(newUser);

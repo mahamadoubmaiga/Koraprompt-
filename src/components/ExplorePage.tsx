@@ -66,12 +66,10 @@ interface ExplorePageProps {
 
 export const ExplorePage: React.FC<ExplorePageProps> = ({ onRemix }) => {
     const { t } = useTranslations();
-    const { prompts } = useData();
+    const { publicPrompts } = useData();
     const [filter, setFilter] = useState<'all' | PromptType>('all');
     
-    const publishedPrompts = useMemo(() => prompts.filter(p => p.isPublished), [prompts]);
-    
-    const filteredPrompts = useMemo(() => publishedPrompts.filter(template => filter === 'all' || template.type === filter), [publishedPrompts, filter]);
+    const filteredPrompts = useMemo(() => publicPrompts.filter(template => filter === 'all' || template.type === filter), [publicPrompts, filter]);
 
     return (
         <div className="container mx-auto px-6 py-12">

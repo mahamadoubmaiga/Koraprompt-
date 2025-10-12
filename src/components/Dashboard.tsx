@@ -152,7 +152,7 @@ const PromptCard: React.FC<{ prompt: SavedPrompt, onUpdate: (prompt: SavedPrompt
 export const Dashboard: React.FC = () => {
     const { t } = useTranslations();
     const { user } = useAuth();
-    const { prompts, folders, addFolder, updatePrompt, deletePrompt } = useData();
+    const { userPrompts, folders, addFolder, updatePrompt, deletePrompt } = useData();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
@@ -166,13 +166,13 @@ export const Dashboard: React.FC = () => {
     };
     
     const filteredPrompts = useMemo(() => {
-        return prompts.filter(p => {
+        return userPrompts.filter(p => {
             const searchInput = searchQuery.toLowerCase();
             const inFolder = activeFolderId === null || p.folderId === activeFolderId;
             const matchesSearch = p.projectName.toLowerCase().includes(searchInput) || p.userInput.toLowerCase().includes(searchInput);
             return inFolder && matchesSearch;
         });
-    }, [prompts, searchQuery, activeFolderId]);
+    }, [userPrompts, searchQuery, activeFolderId]);
 
     if (!user) return null;
 

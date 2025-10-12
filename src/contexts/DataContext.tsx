@@ -1,9 +1,10 @@
-import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
-import { SavedPrompt, Folder, Preset, PromptVersion } from '../types';
+import React, { createContext, useState, useEffect, ReactNode, useContext, useMemo } from 'react';
+import { SavedPrompt, Folder, Preset } from '../types';
 import { useAuth } from './AuthContext';
 
 interface DataContextType {
-  prompts: SavedPrompt[];
+  userPrompts: SavedPrompt[];
+  publicPrompts: SavedPrompt[];
   folders: Folder[];
   presets: Preset[];
   addPrompt: (prompt: Omit<SavedPrompt, 'id'>) => void;
@@ -23,47 +24,49 @@ const setStorage = <T,>(key: string, data: T[]) => localStorage.setItem(key, JSO
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   
-  const [prompts, setPrompts] = useState<SavedPrompt[]>([]);
+  const [allPrompts, setAllPrompts] = useState<SavedPrompt[]>(() => getStorage<SavedPrompt>('kora-prompts'));
   const [folders, setFolders] = useState<Folder[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
 
   useEffect(() => {
     if (user) {
-      const allPrompts = getStorage<SavedPrompt>('kora-prompts');
-      setPrompts(allPrompts.filter(p => p.userId === user.id));
-
       const allFolders = getStorage<Folder>('kora-folders');
       setFolders(allFolders.filter(f => f.userId === user.id));
 
       const allPresets = getStorage<Preset>('kora-presets');
       setPresets(allPresets.filter(p => p.userId === user.id));
     } else {
-      setPrompts([]);
       setFolders([]);
       setPresets([]);
     }
   }, [user]);
 
+  const userPrompts = useMemo(() => {
+    if (!user) return [];
+    return allPrompts.filter(p => p.userId === user.id);
+  }, [user, allPrompts]);
+
+  const publicPrompts = useMemo(() => {
+    return allPrompts.filter(p => p.isPublished);
+  }, [allPrompts]);
+
   const addPrompt = (promptData: Omit<SavedPrompt, 'id'>) => {
-    const allPrompts = getStorage<SavedPrompt>('kora-prompts');
     const newPrompt = { ...promptData, id: `prompt_${Date.now()}` };
     const updatedPrompts = [newPrompt, ...allPrompts];
+    setAllPrompts(updatedPrompts);
     setStorage('kora-prompts', updatedPrompts);
-    if(user) setPrompts(prev => [newPrompt, ...prev]);
   };
 
   const updatePrompt = (updatedPrompt: SavedPrompt) => {
-    const allPrompts = getStorage<SavedPrompt>('kora-prompts');
     const updatedAllPrompts = allPrompts.map(p => p.id === updatedPrompt.id ? updatedPrompt : p);
+    setAllPrompts(updatedAllPrompts);
     setStorage('kora-prompts', updatedAllPrompts);
-     if(user) setPrompts(prev => prev.map(p => p.id === updatedPrompt.id ? updatedPrompt : p));
   };
   
   const deletePrompt = (id: string) => {
-    const allPrompts = getStorage<SavedPrompt>('kora-prompts');
     const updatedAllPrompts = allPrompts.filter(p => p.id !== id);
+    setAllPrompts(updatedAllPrompts);
     setStorage('kora-prompts', updatedAllPrompts);
-    if(user) setPrompts(prev => prev.filter(p => p.id !== id));
   };
 
   const addFolder = (folderData: Omit<Folder, 'id'>) => {
@@ -83,11 +86,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setPresets(prev => [newPreset, ...prev]);
   };
   
-  // This provides all prompts for the explore page, regardless of user
-  const publicPrompts = getStorage<SavedPrompt>('kora-prompts');
-
   return (
-    <DataContext.Provider value={{ prompts: user ? prompts : publicPrompts, folders, presets, addPrompt, updatePrompt, deletePrompt, addFolder, addPreset }}>
+    <DataContext.Provider value={{ userPrompts, publicPrompts, folders, presets, addPrompt, updatePrompt, deletePrompt, addFolder, addPreset }}>
       {children}
     </DataContext.Provider>
   );

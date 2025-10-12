@@ -10,17 +10,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
     const { login, signup } = useAuth();
     const { t } = useTranslations();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isLogin) {
-            login(email);
-        } else {
-            signup(email);
+        setError(null);
+        try {
+            if (isLogin) {
+                await login(email);
+            } else {
+                await signup(email);
+            }
+            onClose();
+        } catch (err: any) {
+            setError(err.message);
         }
-        onClose();
+    };
+
+    const handleSwitchMode = () => {
+        setIsLogin(!isLogin);
+        setError(null);
+        setEmail('');
+        setPassword('');
     };
 
     return (
@@ -29,6 +42,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                 <div className="p-6">
                     <h2 className="text-2xl font-bold text-center mb-4">{isLogin ? t('auth_modal_login_title') : t('auth_modal_signup_title')}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && <div className="bg-red-500/20 border border-red-500 text-red-300 text-sm rounded-md p-3" role="alert">{error}</div>}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-neutral-300">{t('auth_modal_email_label')}</label>
                             <input
@@ -38,6 +52,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                                 onChange={e => setEmail(e.target.value)}
                                 required
                                 className="mt-1 w-full bg-neutral-900 border border-neutral-600 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary"
+                                autoComplete="email"
                             />
                         </div>
                         <div>
@@ -49,6 +64,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                                 onChange={e => setPassword(e.target.value)}
                                 required
                                 className="mt-1 w-full bg-neutral-900 border border-neutral-600 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary"
+                                autoComplete={isLogin ? "current-password" : "new-password"}
                             />
                         </div>
                         <button type="submit" className="w-full bg-brand-primary text-white py-3 rounded-md font-semibold hover:bg-brand-secondary transition-colors">
@@ -56,7 +72,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                         </button>
                     </form>
                     <div className="text-center mt-4">
-                        <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-brand-light hover:underline">
+                        <button onClick={handleSwitchMode} className="text-sm text-brand-light hover:underline">
                             {isLogin ? t('auth_modal_switch_to_signup') : t('auth_modal_switch_to_login')}
                         </button>
                     </div>

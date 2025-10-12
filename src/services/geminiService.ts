@@ -1,13 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { PromptType } from "../types";
 
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. AI features will not work.");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Adhere to guideline: Initialize directly and assume API_KEY is present.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generatePrompts = async (
     idea: string,
@@ -77,7 +72,9 @@ export const generatePrompts = async (
         
         if (isSequence) {
             try {
-                return JSON.parse(response.text);
+                // Add trim() to handle potential whitespace from API response.
+                const jsonStr = response.text.trim();
+                return JSON.parse(jsonStr);
             } catch (e) {
                 console.error("Failed to parse JSON response for sequence:", response.text);
                 return ["Error: The AI returned an invalid format for the prompt sequence. Please try again."];
