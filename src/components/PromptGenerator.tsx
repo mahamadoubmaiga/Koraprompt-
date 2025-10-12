@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { PromptType, SavedPrompt, RemixState, Preset } from '../types';
@@ -378,45 +379,47 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                                     <div className="h-4 bg-neutral-700 rounded w-5/6"></div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                    <div className="space-y-6">
-                                        {generatedPrompts.map((prompt, index) => (
-                                            <div key={index} className="bg-neutral-900 p-4 rounded-md">
-                                                {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{t('scene_prefix')} {index + 1}</h3>}
-                                                <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
-                                                <div className="mt-3">
-                                                    <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
-                                                        {copiedIndex === index ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
-                                                        <span>{copiedIndex === index ? t('copied_button') : t('copy_button')}</span>
-                                                    </button>
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                        <div className="space-y-6">
+                                            {generatedPrompts.map((prompt, index) => (
+                                                <div key={index} className="bg-neutral-900 p-4 rounded-md">
+                                                    {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{t('scene_prefix')} {index + 1}</h3>}
+                                                    <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
+                                                    <div className="mt-3">
+                                                        <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
+                                                            {copiedIndex === index ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
+                                                            <span>{copiedIndex === index ? t('copied_button') : t('copy_button')}</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {activeTab === 'image' && mode === 'single' && (
+                                            <div className="flex flex-col items-center justify-center bg-neutral-900 p-4 rounded-md h-full">
+                                                {isGeneratingImage ? (
+                                                    <div className="w-full aspect-square bg-neutral-700 rounded-md animate-pulse flex items-center justify-center">
+                                                        <p className="text-neutral-400">{t('generating_image_button')}</p>
+                                                    </div>
+                                                ) : generatedImageData ? (
+                                                    <img src={generatedImageData} alt="AI generated" className="rounded-md w-full" />
+                                                ) : (
+                                                     <button onClick={handleGenerateImage} className="w-full aspect-square border-2 border-dashed border-neutral-600 rounded-md flex flex-col items-center justify-center text-neutral-400 hover:bg-neutral-700 hover:border-neutral-500 transition-colors">
+                                                        <PhotoIcon className="w-12 h-12 mb-2" />
+                                                        <span className="font-semibold">{t('generate_image_button')}</span>
+                                                     </button>
+                                                )}
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                     
-                                    {activeTab === 'image' && mode === 'single' && (
-                                        <div className="flex flex-col items-center justify-center bg-neutral-900 p-4 rounded-md h-full">
-                                            {isGeneratingImage ? (
-                                                <div className="w-full aspect-square bg-neutral-700 rounded-md animate-pulse flex items-center justify-center">
-                                                    <p className="text-neutral-400">{t('generating_image_button')}</p>
-                                                </div>
-                                            ) : generatedImageData ? (
-                                                <img src={generatedImageData} alt="AI generated" className="rounded-md w-full" />
-                                            ) : (
-                                                 <button onClick={handleGenerateImage} className="w-full aspect-square border-2 border-dashed border-neutral-600 rounded-md flex flex-col items-center justify-center text-neutral-400 hover:bg-neutral-700 hover:border-neutral-500 transition-colors">
-                                                    <PhotoIcon className="w-12 h-12 mb-2" />
-                                                    <span className="font-semibold">{t('generate_image_button')}</span>
-                                                 </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div className="mt-6 flex items-center justify-between">
-                                     <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors font-semibold disabled:opacity-50" disabled={!user}>
-                                        {user ? t('save_to_dashboard') : t('login_button') + ' to save'}
-                                    </button>
-                                </div>
+                                    <div className="mt-6 flex items-center justify-between">
+                                         <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors font-semibold disabled:opacity-50" disabled={!user}>
+                                            {user ? t('save_to_dashboard') : t('login_button') + ' to save'}
+                                        </button>
+                                    </div>
+                                </>
                             )}
                         </div>
 
