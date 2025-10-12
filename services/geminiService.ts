@@ -98,3 +98,66 @@ export const generatePrompts = async (
         return ["An error occurred while generating the prompt. Please check your API key and try again."];
     }
 };
+
+export const generateImageFromPrompt = async (prompt: string, aspectRatio: string): Promise<string> => {
+    if (!API_KEY) {
+        // Return a placeholder image as a base64 string
+        const placeholderUrl = `https://placehold.co/512x512/111827/A5B4FC/png?text=Mock+Image\\n${aspectRatio}`;
+        const response = await fetch(placeholderUrl);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    try {
+        const response = await ai.models.generateImages({
+            model: 'imagen-4.0-generate-001',
+            prompt: prompt,
+            config: {
+              numberOfImages: 1,
+              outputMimeType: 'image/png',
+              aspectRatio: aspectRatio as "1:1" | "3:4" | "4:3" | "9:16" | "16:9",
+            },
+        });
+        const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+        return `data:image/png;base64,${base64ImageBytes}`;
+    } catch (error) {
+        console.error("Error generating image with Gemini:", error);
+        throw new Error("Failed to generate image.");
+    }
+};
+
+
+export const generatePromptFromImage = async (base64Image: string, mimeType: string, language: 'en' | 'fr'): Promise<string> => {
+    if (!API_KEY) {
+        return new Promise(resolve => setTimeout(() => resolve("This is a mock description of the uploaded image. (API key not configured)"), 1000));
+    }
+    
+    const imagePart = {
+      inlineData: {
+        mimeType,
+        data: base64Image.split(',')[1],
+      },
+    };
+
+    const languageInstruction = language === 'fr' ? 'Describe the image in French.' : 'Describe the image in English.';
+
+    const textPart = {
+      text: `Analyze this image in detail. Describe the subject, setting, style, composition, colors, and lighting to create a detailed and evocative text prompt for an AI image generator. ${languageInstruction}`
+    };
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [imagePart, textPart] },
+        });
+        return response.text;
+    } catch(error) {
+        console.error("Error generating prompt from image:", error);
+        throw new Error("Failed to analyze image.");
+    }
+};

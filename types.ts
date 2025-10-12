@@ -3,7 +3,7 @@ export enum Language {
   FR = 'fr',
 }
 
-export type Page = 'home' | 'generator' | 'templates' | 'dashboard' | 'faq';
+export type Page = 'home' | 'generator' | 'explore' | 'dashboard' | 'faq';
 
 export type PromptType = 'video' | 'image';
 
@@ -12,8 +12,10 @@ export interface SavedPrompt {
   type: PromptType;
   prompts: string[];
   generator: string;
-  userInput: string;
+  userInput: string; // The original idea
+  projectName: string; // User-editable name, defaults to userInput
   date: string;
+  generatedImage?: string; // Base64 string of the generated image
 }
 
 export interface Generator {
@@ -29,4 +31,5 @@ export interface Template {
     type: PromptType;
     category: string;
     generator: string;
+    imageUrl: string;
 }

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { PromptType, SavedPrompt } from '../types';
-import { GENERATORS, VIDEO_CATEGORIES, IMAGE_CATEGORIES } from '../constants';
-import { generatePrompts } from '../services/geminiService';
+import { GENERATORS, VIDEO_CATEGORIES, IMAGE_CATEGORIES, SURPRISE_ME_IDEAS } from '../constants';
+import { generatePrompts, generateImageFromPrompt, generatePromptFromImage } from '../services/geminiService';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
+import { SparklesIcon } from './icons/SparklesIcon';
+import { PhotoIcon } from './icons/PhotoIcon';
 
 export const PromptGenerator: React.FC = () => {
     const { t, language } = useTranslations();
@@ -18,26 +20,38 @@ export const PromptGenerator: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     
-    // Advanced options state
+    // New features state
+    const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [generatedImageData, setGeneratedImageData] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Advanced & Refinement state
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [negativePrompt, setNegativePrompt] = useState('');
-    const [creativity, setCreativity] = useState('medium'); // 'low', 'medium', 'high'
+    const [creativity, setCreativity] = useState('medium');
     const [aspectRatio, setAspectRatio] = useState('1:1');
     const [promptCount, setPromptCount] = useState(3);
+    const [refinementInput, setRefinementInput] = useState('');
+
+    const resetGenerationState = () => {
+        setGeneratedPrompts([]);
+        setGeneratedImageData(null);
+    }
 
     const handleTabChange = (tab: PromptType) => {
         setActiveTab(tab);
         const firstGenerator = GENERATORS.find(g => g.type === tab);
         setSelectedGenerator(firstGenerator?.id || '');
         setSelectedCategory(tab === 'video' ? VIDEO_CATEGORIES[0] : IMAGE_CATEGORIES[0]);
-        setGeneratedPrompts([]);
+        resetGenerationState();
         setAspectRatio('1:1');
     };
-
-    const handleGenerate = async () => {
-        if (!userInput.trim()) return;
+    
+    const performGeneration = async (idea: string) => {
+        if (!idea.trim()) return;
         setIsLoading(true);
-        setGeneratedPrompts([]);
+        resetGenerationState();
         
         const creativitySettings: { [key: string]: { temperature: number; topP: number } } = {
             low: { temperature: 0.3, topP: 0.8 },
@@ -49,7 +63,7 @@ export const PromptGenerator: React.FC = () => {
 
         try {
             const prompts = await generatePrompts(
-                userInput, 
+                idea, 
                 activeTab, 
                 selectedGenerator, 
                 selectedCategory, 
@@ -68,6 +82,67 @@ export const PromptGenerator: React.FC = () => {
         setIsLoading(false);
     };
 
+    const handleGenerate = () => performGeneration(userInput);
+
+    const handleRefine = () => {
+        if (!refinementInput.trim()) return;
+        const combinedInput = `${userInput}. ${refinementInput}`;
+        setUserInput(combinedInput);
+        performGeneration(combinedInput);
+        setRefinementInput('');
+    };
+
+    const handleSurpriseMe = () => {
+        const randomIndex = Math.floor(Math.random() * SURPRISE_ME_IDEAS.length);
+        setUserInput(SURPRISE_ME_IDEAS[randomIndex]);
+        resetGenerationState();
+    };
+
+    const handleAnalyzeImageClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsAnalyzingImage(true);
+        setUserInput('');
+        resetGenerationState();
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            try {
+                const base64Image = reader.result as string;
+                const prompt = await generatePromptFromImage(base64Image, file.type, language);
+                setUserInput(prompt);
+            } catch (error) {
+                console.error(error);
+                setUserInput('Failed to analyze the image. Please try again.');
+            }
+            setIsAnalyzingImage(false);
+        };
+        reader.onerror = () => {
+            console.error('Error reading file');
+            setUserInput('Error reading the image file.');
+            setIsAnalyzingImage(false);
+        };
+    };
+
+    const handleGenerateImage = async () => {
+        if (generatedPrompts.length === 0 || activeTab !== 'image' || mode !== 'single') return;
+        setIsGeneratingImage(true);
+        try {
+            const imageData = await generateImageFromPrompt(generatedPrompts[0], aspectRatio);
+            setGeneratedImageData(imageData);
+        } catch (error) {
+            console.error(error);
+            // Handle error display if needed
+        }
+        setIsGeneratingImage(false);
+    };
+
     const handleCopy = (text: string, index: number) => {
         navigator.clipboard.writeText(text);
         setCopiedIndex(index);
@@ -82,8 +157,10 @@ export const PromptGenerator: React.FC = () => {
             type: activeTab,
             prompts: generatedPrompts,
             generator: selectedGenerator,
-            userInput,
-            date: new Date().toLocaleDateString()
+            userInput: userInput,
+            projectName: userInput.substring(0, 70),
+            date: new Date().toLocaleDateString(),
+            ...(generatedImageData && { generatedImage: generatedImageData }),
         };
         localStorage.setItem('kora-prompts', JSON.stringify([newPrompt, ...savedPrompts]));
         alert('Prompt saved to dashboard!');
@@ -106,25 +183,45 @@ export const PromptGenerator: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
-                    <div>
+                     <div>
+                        <div className="flex justify-between items-center mb-2">
+                             <label htmlFor="idea" className="block text-sm font-medium text-neutral-300">{mode === 'single' ? t('your_idea_label') : t('project_idea_label')}</label>
+                            <div className="flex items-center space-x-4">
+                               {activeTab === 'image' && mode === 'single' && (
+                                   <>
+                                   <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                                   <button onClick={handleAnalyzeImageClick} disabled={isAnalyzingImage} className="flex items-center space-x-2 text-sm text-brand-light hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <PhotoIcon className="w-4 h-4" />
+                                        <span>{isAnalyzingImage ? t('analyzing_image_button') : t('analyze_image_button')}</span>
+                                   </button>
+                                   </>
+                               )}
+                               <button onClick={handleSurpriseMe} className="flex items-center space-x-2 text-sm text-brand-light hover:text-white transition-colors">
+                                   <SparklesIcon className="w-4 h-4" />
+                                   <span>{t('surprise_me_button')}</span>
+                               </button>
+                           </div>
+                        </div>
+                         <textarea
+                            id="idea"
+                            value={userInput}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            placeholder={mode === 'single' ? t('your_idea_placeholder') : t('project_idea_placeholder')}
+                            className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
+                            rows={isAnalyzingImage ? 1 : 3}
+                            disabled={isAnalyzingImage}
+                        />
+                         {isAnalyzingImage && <div className="text-sm text-center text-neutral-400 mt-2">Analyzing image...</div>}
+                    </div>
+
+                     <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">{t('generation_mode')}</label>
                         <div className="flex space-x-1 rounded-md bg-neutral-800 p-1 text-center text-sm font-semibold border border-neutral-700">
                             <button onClick={() => setMode('single')} className={`w-full py-2 rounded-md transition-colors ${mode === 'single' ? 'bg-brand-primary text-white' : 'hover:bg-neutral-700'}`}>{t('single_prompt')}</button>
                             <button onClick={() => setMode('sequence')} className={`w-full py-2 rounded-md transition-colors ${mode === 'sequence' ? 'bg-brand-primary text-white' : 'hover:bg-neutral-700'}`}>{t('project_sequence')}</button>
                         </div>
                     </div>
-
-                    <div>
-                        <label htmlFor="idea" className="block text-sm font-medium text-neutral-300 mb-2">{mode === 'single' ? t('your_idea_label') : t('project_idea_label')}</label>
-                        <textarea
-                            id="idea"
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            placeholder={mode === 'single' ? t('your_idea_placeholder') : t('project_idea_placeholder')}
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
-                            rows={3}
-                        />
-                    </div>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div>
                            <label htmlFor="generator" className="block text-sm font-medium text-neutral-300 mb-2">{t('generator_label')}</label>
@@ -192,42 +289,76 @@ export const PromptGenerator: React.FC = () => {
                         </div>
                     )}
                     
-                    <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-brand-primary text-white py-3 rounded-md font-semibold text-lg hover:bg-brand-secondary transition-colors disabled:bg-neutral-600 disabled:cursor-not-allowed">
+                    <button onClick={handleGenerate} disabled={isLoading || isAnalyzingImage} className="w-full bg-brand-primary text-white py-3 rounded-md font-semibold text-lg hover:bg-brand-secondary transition-colors disabled:bg-neutral-600 disabled:cursor-not-allowed">
                         {isLoading ? t('generating_button') : t('generate_button')}
                     </button>
                 </div>
                 
                 {(isLoading || generatedPrompts.length > 0) && (
-                    <div className="mt-10 bg-neutral-800 p-6 rounded-lg border border-neutral-700">
-                        <h2 className="text-xl font-semibold mb-4">{mode === 'sequence' ? t('ai_result_sequence_title') : t('ai_result_title')}</h2>
-                        {isLoading ? (
-                            <div className="animate-pulse space-y-3">
-                                <div className="h-4 bg-neutral-700 rounded w-full"></div>
-                                <div className="h-4 bg-neutral-700 rounded w-5/6"></div>
-                                <div className="h-4 bg-neutral-700 rounded w-full mt-2"></div>
-                                <div className="h-4 bg-neutral-700 rounded w-3/4"></div>
-                            </div>
-                        ) : (
-                            <div>
-                                <div className="space-y-6">
-                                {generatedPrompts.map((prompt, index) => (
-                                    <div key={index} className="bg-neutral-900 p-4 rounded-md">
-                                        {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{t('scene_prefix')} {index + 1}</h3>}
-                                        <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
-                                        <div className="mt-3">
-                                            <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
-                                                {copiedIndex === index ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
-                                                <span>{copiedIndex === index ? t('copied_button') : t('copy_button')}</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                    <div className="mt-10">
+                        <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700">
+                            <h2 className="text-xl font-semibold mb-4">{mode === 'sequence' ? t('ai_result_sequence_title') : t('ai_result_title')}</h2>
+                            {isLoading && generatedPrompts.length === 0 ? (
+                                <div className="animate-pulse space-y-3">
+                                    <div className="h-4 bg-neutral-700 rounded w-full"></div>
+                                    <div className="h-4 bg-neutral-700 rounded w-5/6"></div>
                                 </div>
-                                <div className="mt-6">
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                    <div className="space-y-6">
+                                        {generatedPrompts.map((prompt, index) => (
+                                            <div key={index} className="bg-neutral-900 p-4 rounded-md">
+                                                {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{t('scene_prefix')} {index + 1}</h3>}
+                                                <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
+                                                <div className="mt-3">
+                                                    <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
+                                                        {copiedIndex === index ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
+                                                        <span>{copiedIndex === index ? t('copied_button') : t('copy_button')}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    {activeTab === 'image' && mode === 'single' && (
+                                        <div className="flex flex-col items-center justify-center bg-neutral-900 p-4 rounded-md h-full">
+                                            {isGeneratingImage ? (
+                                                <div className="w-full aspect-square bg-neutral-700 rounded-md animate-pulse flex items-center justify-center">
+                                                    <p className="text-neutral-400">{t('generating_image_button')}</p>
+                                                </div>
+                                            ) : generatedImageData ? (
+                                                <img src={generatedImageData} alt="AI generated" className="rounded-md w-full" />
+                                            ) : (
+                                                 <button onClick={handleGenerateImage} className="w-full aspect-square border-2 border-dashed border-neutral-600 rounded-md flex flex-col items-center justify-center text-neutral-400 hover:bg-neutral-700 hover:border-neutral-500 transition-colors">
+                                                    <PhotoIcon className="w-12 h-12 mb-2" />
+                                                    <span className="font-semibold">{t('generate_image_button')}</span>
+                                                 </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="mt-6 flex items-center justify-between">
                                      <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors font-semibold">
                                         {t('save_to_dashboard')}
                                     </button>
                                 </div>
+                            )}
+                        </div>
+
+                        {!isLoading && generatedPrompts.length > 0 && mode === 'single' && (
+                             <div className="mt-6 bg-neutral-800/60 p-6 rounded-lg border border-neutral-700">
+                                <h3 className="text-lg font-semibold mb-2">{t('refine_prompt_title')}</h3>
+                                 <textarea
+                                    value={refinementInput}
+                                    onChange={(e) => setRefinementInput(e.target.value)}
+                                    placeholder={t('refine_prompt_placeholder')}
+                                    className="w-full bg-neutral-800 border border-neutral-600 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
+                                    rows={2}
+                                />
+                                <button onClick={handleRefine} disabled={isLoading} className="mt-3 bg-brand-secondary text-white py-2 px-5 rounded-md font-semibold hover:bg-brand-primary transition-colors disabled:bg-neutral-600 disabled:cursor-not-allowed">
+                                    {isLoading ? t('refining_button') : t('refine_button')}
+                                </button>
                             </div>
                         )}
                     </div>

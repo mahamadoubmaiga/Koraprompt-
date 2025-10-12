@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { Header } from './components/Header';
 import { HomePage } from './components/HomePage';
 import { PromptGenerator } from './components/PromptGenerator';
-import { TemplateLibrary } from './components/TemplateLibrary';
+import { ExplorePage } from './components/ExplorePage';
 import { Dashboard } from './components/Dashboard';
 import { Faq } from './components/Faq';
 import { Page } from './types';
@@ -19,8 +18,8 @@ const AppContent: React.FC = () => {
                 return <HomePage setPage={setCurrentPage} />;
             case 'generator':
                 return <PromptGenerator />;
-            case 'templates':
-                return <TemplateLibrary />;
+            case 'explore':
+                return <ExplorePage />;
             case 'dashboard':
                 return <Dashboard />;
             case 'faq':

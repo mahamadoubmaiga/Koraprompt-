@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { Language, Page } from '../types';
@@ -18,7 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage }) => {
 
     const navItems: { page: Page; label: string }[] = [
         { page: 'generator', label: t('nav_generator') },
-        { page: 'templates', label: t('nav_templates') },
+        { page: 'explore', label: t('nav_explore') },
         { page: 'dashboard', label: t('nav_dashboard') },
         { page: 'faq', label: t('nav_faq') },
     ];

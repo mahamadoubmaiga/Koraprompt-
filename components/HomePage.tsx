@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { Page, Template } from '../types';
@@ -9,16 +8,19 @@ interface HomePageProps {
 }
 
 const TemplateCard: React.FC<{ template: Template }> = ({ template }) => (
-    <div className="bg-neutral-800 p-4 rounded-lg flex flex-col h-full border border-neutral-700 hover:border-brand-primary transition-all duration-300 transform hover:-translate-y-1">
-        <div className="flex-grow">
-            <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-white">{template.name}</h3>
-                <span className="text-xs font-medium bg-brand-primary/20 text-brand-light px-2 py-1 rounded-full">{template.type}</span>
+    <div className="bg-neutral-800 rounded-lg flex flex-col h-full border border-neutral-700 hover:border-brand-primary transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+        <img src={template.imageUrl} alt={template.name} className="w-full h-40 object-cover" />
+        <div className="p-4 flex flex-col flex-grow">
+            <div className="flex-grow">
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-white">{template.name}</h3>
+                    <span className="text-xs font-medium bg-brand-primary/20 text-brand-light px-2 py-1 rounded-full">{template.type}</span>
+                </div>
+                <p className="text-sm text-neutral-400 line-clamp-3">{template.prompt}</p>
             </div>
-            <p className="text-sm text-neutral-400 line-clamp-3">{template.prompt}</p>
-        </div>
-        <div className="mt-4">
-            <span className="text-xs text-neutral-500">{template.generator} / {template.category}</span>
+            <div className="mt-4">
+                <span className="text-xs text-neutral-500">{template.generator} / {template.category}</span>
+            </div>
         </div>
     </div>
 );
@@ -38,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({ setPage }) => {
                 <button onClick={() => setPage('generator')} className="bg-brand-primary text-white px-8 py-3 rounded-md font-semibold text-lg hover:bg-brand-secondary transition-transform transform hover:scale-105 duration-300">
                     {t('hero_cta_generate')}
                 </button>
-                <button onClick={() => setPage('templates')} className="bg-neutral-700 text-white px-8 py-3 rounded-md font-semibold text-lg hover:bg-neutral-600 transition-transform transform hover:scale-105 duration-300">
+                <button onClick={() => setPage('explore')} className="bg-neutral-700 text-white px-8 py-3 rounded-md font-semibold text-lg hover:bg-neutral-600 transition-transform transform hover:scale-105 duration-300">
                     {t('hero_cta_explore')}
                 </button>
             </div>
