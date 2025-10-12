@@ -4,10 +4,10 @@ import { PromptType } from "../types";
 const API_KEY = process.env.API_KEY;
 
 if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. Using a placeholder. AI features will not work.");
+  console.warn("API_KEY environment variable not set. AI features will not work.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY || "YOUR_API_KEY_HERE" });
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export const generatePrompts = async (
     idea: string,
@@ -21,13 +21,6 @@ export const generatePrompts = async (
     aspectRatio: string | null,
     promptCount: number = 1
 ): Promise<string[]> => {
-    if (!API_KEY) {
-        const mockPrompts = Array.from({ length: promptCount }, (_, i) => 
-            `Scene ${i + 1}: This is a mock response for a ${type} prompt about "${idea}" for the ${generator} generator in the ${category} category. The style is highly detailed and cinematic. (This is a placeholder as API key is not configured)`
-        );
-        return new Promise(resolve => setTimeout(() => resolve(mockPrompts), 1000));
-    }
-
     const languageInstruction = language === 'fr' ? 'The final prompt(s) must be in French.' : 'The final prompt(s) must be in English.';
     const isSequence = promptCount > 1;
 
@@ -100,19 +93,6 @@ export const generatePrompts = async (
 };
 
 export const generateImageFromPrompt = async (prompt: string, aspectRatio: string): Promise<string> => {
-    if (!API_KEY) {
-        // Return a placeholder image as a base64 string
-        const placeholderUrl = `https://placehold.co/512x512/111827/A5B4FC/png?text=Mock+Image\\n${aspectRatio}`;
-        const response = await fetch(placeholderUrl);
-        const blob = await response.blob();
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    }
-
     try {
         const response = await ai.models.generateImages({
             model: 'imagen-4.0-generate-001',
@@ -133,10 +113,6 @@ export const generateImageFromPrompt = async (prompt: string, aspectRatio: strin
 
 
 export const generatePromptFromImage = async (base64Image: string, mimeType: string, language: 'en' | 'fr'): Promise<string> => {
-    if (!API_KEY) {
-        return new Promise(resolve => setTimeout(() => resolve("This is a mock description of the uploaded image. (API key not configured)"), 1000));
-    }
-    
     const imagePart = {
       inlineData: {
         mimeType,
