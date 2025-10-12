@@ -6,10 +6,14 @@ export const GENERATORS: Generator[] = [
     { id: 'runway', name: 'Runway', type: 'video' },
     { id: 'pika', name: 'Pika', type: 'video' },
     { id: 'sora', name: 'Sora', type: 'video' },
+    { id: 'kling', name: 'Kling', type: 'video' },
+    { id: 'luma', name: 'Luma Dream Machine', type: 'video' },
     { id: 'midjourney', name: 'MidJourney', type: 'image' },
     { id: 'stable-diffusion', name: 'Stable Diffusion', type: 'image' },
     { id: 'dalle', name: 'DALL·E 3', type: 'image' },
     { id: 'ideogram', name: 'Ideogram', type: 'image' },
+    { id: 'firefly', name: 'Adobe Firefly', type: 'image' },
+    { id: 'leonardo', name: 'Leonardo.Ai', type: 'image' },
 ];
 
 export const VIDEO_CATEGORIES = ['cinematic', 'tiktok', 'surreal', 'action', 'storytelling', 'music_video'];

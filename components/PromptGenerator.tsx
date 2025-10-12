@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { PromptType, SavedPrompt } from '../types';
 import { GENERATORS, VIDEO_CATEGORIES, IMAGE_CATEGORIES } from '../constants';
-import { generatePrompt } from '../services/geminiService';
+import { generatePrompts } from '../services/geminiService';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
@@ -11,32 +10,34 @@ import { ChevronDownIcon } from './icons/ChevronDownIcon';
 export const PromptGenerator: React.FC = () => {
     const { t, language } = useTranslations();
     const [activeTab, setActiveTab] = useState<PromptType>('video');
+    const [mode, setMode] = useState<'single' | 'sequence'>('single');
     const [userInput, setUserInput] = useState('');
     const [selectedGenerator, setSelectedGenerator] = useState(GENERATORS.find(g => g.type === 'video')?.id || '');
     const [selectedCategory, setSelectedCategory] = useState(VIDEO_CATEGORIES[0]);
-    const [generatedPrompt, setGeneratedPrompt] = useState('');
+    const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isCopied, setIsCopied] = useState(false);
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     
     // Advanced options state
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [negativePrompt, setNegativePrompt] = useState('');
     const [creativity, setCreativity] = useState('medium'); // 'low', 'medium', 'high'
     const [aspectRatio, setAspectRatio] = useState('1:1');
+    const [promptCount, setPromptCount] = useState(3);
 
     const handleTabChange = (tab: PromptType) => {
         setActiveTab(tab);
         const firstGenerator = GENERATORS.find(g => g.type === tab);
         setSelectedGenerator(firstGenerator?.id || '');
         setSelectedCategory(tab === 'video' ? VIDEO_CATEGORIES[0] : IMAGE_CATEGORIES[0]);
-        setGeneratedPrompt('');
+        setGeneratedPrompts([]);
         setAspectRatio('1:1');
     };
 
     const handleGenerate = async () => {
         if (!userInput.trim()) return;
         setIsLoading(true);
-        setGeneratedPrompt('');
+        setGeneratedPrompts([]);
         
         const creativitySettings: { [key: string]: { temperature: number; topP: number } } = {
             low: { temperature: 0.3, topP: 0.8 },
@@ -47,7 +48,7 @@ export const PromptGenerator: React.FC = () => {
         const finalAspectRatio = activeTab === 'image' ? aspectRatio : null;
 
         try {
-            const prompt = await generatePrompt(
+            const prompts = await generatePrompts(
                 userInput, 
                 activeTab, 
                 selectedGenerator, 
@@ -56,28 +57,30 @@ export const PromptGenerator: React.FC = () => {
                 negativePrompt,
                 temperature,
                 topP,
-                finalAspectRatio
+                finalAspectRatio,
+                mode === 'sequence' ? promptCount : 1
             );
-            setGeneratedPrompt(prompt);
+            setGeneratedPrompts(prompts);
         } catch (error) {
             console.error(error);
-            setGeneratedPrompt('An error occurred. Please try again.');
+            setGeneratedPrompts(['An error occurred. Please try again.']);
         }
         setIsLoading(false);
     };
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(generatedPrompt);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
+    const handleCopy = (text: string, index: number) => {
+        navigator.clipboard.writeText(text);
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
     };
 
     const handleSave = () => {
+        if (generatedPrompts.length === 0) return;
         const savedPrompts: SavedPrompt[] = JSON.parse(localStorage.getItem('kora-prompts') || '[]');
         const newPrompt: SavedPrompt = {
             id: new Date().toISOString(),
             type: activeTab,
-            prompt: generatedPrompt,
+            prompts: generatedPrompts,
             generator: selectedGenerator,
             userInput,
             date: new Date().toLocaleDateString()
@@ -104,29 +107,44 @@ export const PromptGenerator: React.FC = () => {
 
                 <div className="space-y-6">
                     <div>
-                        <label htmlFor="idea" className="block text-sm font-medium text-neutral-300 mb-2">{t('your_idea_label')}</label>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">{t('generation_mode')}</label>
+                        <div className="flex space-x-1 rounded-md bg-neutral-800 p-1 text-center text-sm font-semibold border border-neutral-700">
+                            <button onClick={() => setMode('single')} className={`w-full py-2 rounded-md transition-colors ${mode === 'single' ? 'bg-brand-primary text-white' : 'hover:bg-neutral-700'}`}>{t('single_prompt')}</button>
+                            <button onClick={() => setMode('sequence')} className={`w-full py-2 rounded-md transition-colors ${mode === 'sequence' ? 'bg-brand-primary text-white' : 'hover:bg-neutral-700'}`}>{t('project_sequence')}</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="idea" className="block text-sm font-medium text-neutral-300 mb-2">{mode === 'single' ? t('your_idea_label') : t('project_idea_label')}</label>
                         <textarea
                             id="idea"
                             value={userInput}
                             onChange={(e) => setUserInput(e.target.value)}
-                            placeholder={t('your_idea_placeholder')}
+                            placeholder={mode === 'single' ? t('your_idea_placeholder') : t('project_idea_placeholder')}
                             className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
                             rows={3}
                         />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                         <div>
                            <label htmlFor="generator" className="block text-sm font-medium text-neutral-300 mb-2">{t('generator_label')}</label>
                            <select id="generator" value={selectedGenerator} onChange={e => setSelectedGenerator(e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition">
                                {currentGenerators.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                            </select>
                         </div>
-                        <div>
-                           <label htmlFor="category" className="block text-sm font-medium text-neutral-300 mb-2">{t('category_label')}</label>
-                           <select id="category" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition">
-                               {currentCategories.map(c => <option key={c} value={c}>{t(c as any)}</option>)}
-                           </select>
-                        </div>
+                        {mode === 'sequence' ? (
+                            <div>
+                                <label htmlFor="prompt-count" className="block text-sm font-medium text-neutral-300 mb-2">{t('number_of_prompts_label')}</label>
+                                <input type="number" id="prompt-count" value={promptCount} onChange={e => setPromptCount(Math.max(2, parseInt(e.target.value, 10)))} min="2" max="10" className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition" />
+                            </div>
+                        ) : (
+                            <div>
+                               <label htmlFor="category" className="block text-sm font-medium text-neutral-300 mb-2">{t('category_label')}</label>
+                               <select id="category" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition">
+                                   {currentCategories.map(c => <option key={c} value={c}>{t(c as any)}</option>)}
+                               </select>
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-2">
@@ -179,24 +197,34 @@ export const PromptGenerator: React.FC = () => {
                     </button>
                 </div>
                 
-                {(isLoading || generatedPrompt) && (
+                {(isLoading || generatedPrompts.length > 0) && (
                     <div className="mt-10 bg-neutral-800 p-6 rounded-lg border border-neutral-700">
-                        <h2 className="text-xl font-semibold mb-4">{t('ai_result_title')}</h2>
+                        <h2 className="text-xl font-semibold mb-4">{mode === 'sequence' ? t('ai_result_sequence_title') : t('ai_result_title')}</h2>
                         {isLoading ? (
-                            <div className="animate-pulse space-y-2">
+                            <div className="animate-pulse space-y-3">
                                 <div className="h-4 bg-neutral-700 rounded w-full"></div>
                                 <div className="h-4 bg-neutral-700 rounded w-5/6"></div>
+                                <div className="h-4 bg-neutral-700 rounded w-full mt-2"></div>
                                 <div className="h-4 bg-neutral-700 rounded w-3/4"></div>
                             </div>
                         ) : (
                             <div>
-                                <p className="text-neutral-200 whitespace-pre-wrap">{generatedPrompt}</p>
-                                <div className="mt-4 flex space-x-4">
-                                    <button onClick={handleCopy} className="flex items-center space-x-2 bg-neutral-700 px-4 py-2 rounded-md hover:bg-neutral-600 transition-colors">
-                                        {isCopied ? <CheckIcon className="w-5 h-5 text-green-400" /> : <ClipboardIcon className="w-5 h-5" />}
-                                        <span>{isCopied ? t('copied_button') : t('copy_button')}</span>
-                                    </button>
-                                     <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors">
+                                <div className="space-y-6">
+                                {generatedPrompts.map((prompt, index) => (
+                                    <div key={index} className="bg-neutral-900 p-4 rounded-md">
+                                        {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{t('scene_prefix')} {index + 1}</h3>}
+                                        <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
+                                        <div className="mt-3">
+                                            <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
+                                                {copiedIndex === index ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
+                                                <span>{copiedIndex === index ? t('copied_button') : t('copy_button')}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                </div>
+                                <div className="mt-6">
+                                     <button onClick={handleSave} className="bg-brand-primary/80 px-4 py-2 rounded-md hover:bg-brand-primary transition-colors font-semibold">
                                         {t('save_to_dashboard')}
                                     </button>
                                 </div>

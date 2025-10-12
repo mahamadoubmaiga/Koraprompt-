@@ -1,4 +1,3 @@
-
 export const translations = {
   en: {
     // Header
@@ -19,11 +18,14 @@ export const translations = {
     image_prompts: 'Image Prompts',
     your_idea_label: 'Describe your idea',
     your_idea_placeholder: 'e.g., A cat wearing a tiny hat, photorealistic',
+    project_idea_label: 'Describe your overall project or story',
+    project_idea_placeholder: 'e.g., A short film about a robot discovering nature',
     generator_label: 'Select AI Generator',
     category_label: 'Select a Category',
     generate_button: 'Generate',
     generating_button: 'Generating...',
     ai_result_title: 'AI Generated Prompt',
+    ai_result_sequence_title: 'AI Generated Prompt Sequence',
     copy_button: 'Copy',
     copied_button: 'Copied!',
     save_to_dashboard: 'Save to Dashboard',
@@ -35,12 +37,17 @@ export const translations = {
     creativity_medium: 'Balanced',
     creativity_high: 'Imaginative',
     aspect_ratio_label: 'Aspect Ratio',
+    generation_mode: 'Generation Mode',
+    single_prompt: 'Single Prompt',
+    project_sequence: 'Project Sequence',
+    number_of_prompts_label: 'Number of Prompts',
     // Templates Page
     templates_title: 'Prompt Templates Library',
     templates_subtitle: 'Browse our curated collection of ready-to-use prompts.',
     // Dashboard Page
     dashboard_title: 'My Saved Prompts',
     dashboard_empty: 'You haven\'t saved any prompts yet. Start by using the generator!',
+    scene_prefix: 'Scene',
     // FAQ Page
     faq_title: 'Frequently Asked Questions',
     faq_q1_title: 'What is KoraPrompt?',
@@ -79,11 +86,14 @@ export const translations = {
     image_prompts: 'Prompts Image',
     your_idea_label: 'Décrivez votre idée',
     your_idea_placeholder: 'ex: Un chat avec un petit chapeau, photoréaliste',
+    project_idea_label: 'Décrivez votre projet global ou votre histoire',
+    project_idea_placeholder: 'ex: Un court métrage sur un robot qui découvre la nature',
     generator_label: 'Sélectionnez le générateur IA',
     category_label: 'Sélectionnez une catégorie',
     generate_button: 'Générer',
     generating_button: 'Génération...',
     ai_result_title: 'Prompt généré par l\'IA',
+    ai_result_sequence_title: 'Séquence de Prompts générée par l\'IA',
     copy_button: 'Copier',
     copied_button: 'Copié !',
     save_to_dashboard: 'Sauvegarder',
@@ -95,12 +105,17 @@ export const translations = {
     creativity_medium: 'Équilibré',
     creativity_high: 'Imaginatif',
     aspect_ratio_label: 'Format de l\'image',
+    generation_mode: 'Mode de Génération',
+    single_prompt: 'Prompt Unique',
+    project_sequence: 'Séquence de Projet',
+    number_of_prompts_label: 'Nombre de Prompts',
     // Templates Page
     templates_title: 'Bibliothèque de Modèles',
     templates_subtitle: 'Parcourez notre collection de prompts prêts à l\'emploi.',
     // Dashboard Page
     dashboard_title: 'Mes Prompts Sauvegardés',
     dashboard_empty: 'Vous n\'avez encore sauvegardé aucun prompt. Commencez par utiliser le générateur !',
+    scene_prefix: 'Scène',
     // FAQ Page
     faq_title: 'Foire Aux Questions',
     faq_q1_title: 'Qu\'est-ce que KoraPrompt ?',

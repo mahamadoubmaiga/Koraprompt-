@@ -1,4 +1,3 @@
-
 export enum Language {
   EN = 'en',
   FR = 'fr',
@@ -11,7 +10,7 @@ export type PromptType = 'video' | 'image';
 export interface SavedPrompt {
   id: string;
   type: PromptType;
-  prompt: string;
+  prompts: string[];
   generator: string;
   userInput: string;
   date: string;
