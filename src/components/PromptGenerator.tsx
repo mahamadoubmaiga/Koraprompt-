@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { PromptType, SavedPrompt, RemixState, Preset } from '../types';
@@ -11,6 +10,7 @@ import { CheckIcon } from './icons/CheckIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { PhotoIcon } from './icons/PhotoIcon';
+import { CloseIcon } from './icons/CloseIcon';
 
 interface PromptGeneratorProps {
     remixState: RemixState | null;
@@ -33,6 +33,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
     
     // New features state
     const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [generatedImageData, setGeneratedImageData] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,11 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
     const resetGenerationState = () => {
         setGeneratedPrompts([]);
         setGeneratedImageData(null);
+        setImagePreview(null);
+        setUserInput('');
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     }
 
     const handleTabChange = (tab: PromptType) => {
@@ -73,7 +79,8 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
     const performGeneration = async (idea: string) => {
         if (!idea.trim()) return;
         setIsLoading(true);
-        resetGenerationState();
+        setGeneratedPrompts([]);
+        setGeneratedImageData(null);
         
         const creativitySettings: { [key: string]: { temperature: number; topP: number } } = {
             low: { temperature: 0.3, topP: 0.8 },
@@ -109,19 +116,16 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
     const handleRefine = () => {
         if (!refinementInput.trim() || generatedPrompts.length === 0) return;
         
-        // This is where version history would be created.
-        // The save function now handles versioning.
-        
         const refinedIdea = `${userInput} (Refinement: ${refinementInput})`;
-        setUserInput(refinedIdea); // Update the main idea to reflect the refinement
+        setUserInput(refinedIdea); 
         performGeneration(refinedIdea);
         setRefinementInput('');
     };
 
     const handleSurpriseMe = () => {
         const randomIndex = Math.floor(Math.random() * SURPRISE_ME_IDEAS.length);
-        setUserInput(SURPRISE_ME_IDEAS[randomIndex]);
         resetGenerationState();
+        setUserInput(SURPRISE_ME_IDEAS[randomIndex]);
     };
 
     const handleAnalyzeImageClick = () => {
@@ -133,14 +137,14 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
         if (!file) return;
 
         setIsAnalyzingImage(true);
-        setUserInput('');
         resetGenerationState();
-
+        
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
             try {
                 const base64Image = reader.result as string;
+                setImagePreview(base64Image);
                 const prompt = await generatePromptFromImage(base64Image, file.type, language);
                 setUserInput(prompt);
             } catch (error) {
@@ -193,7 +197,6 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
             userId: user.id,
             folderId: null,
             isPublished: false,
-            // Fix: Add missing properties 'likes' and 'likedBy' to satisfy the SavedPrompt type.
             likes: 0,
             likedBy: [],
         };
@@ -266,15 +269,29 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                                </button>
                            </div>
                         </div>
-                         <textarea
-                            id="idea"
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            placeholder={mode === 'single' ? t('your_idea_placeholder') : t('project_idea_placeholder')}
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
-                            rows={isAnalyzingImage ? 1 : 3}
-                            disabled={isAnalyzingImage}
-                        />
+                        <div className={`flex gap-4 items-start ${isAnalyzingImage ? 'opacity-50' : ''}`}>
+                            {imagePreview && (
+                                <div className="relative w-48 flex-shrink-0">
+                                    <img src={imagePreview} alt="Uploaded for analysis" className="rounded-md object-cover aspect-square w-full" />
+                                    <button 
+                                        onClick={resetGenerationState} 
+                                        className="absolute top-1.5 right-1.5 bg-black/60 p-1 rounded-full text-white hover:bg-black/80 transition-colors"
+                                        aria-label="Clear image"
+                                    >
+                                        <CloseIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                            <textarea
+                                id="idea"
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                placeholder={mode === 'single' ? t('your_idea_placeholder') : t('project_idea_placeholder')}
+                                className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
+                                rows={imagePreview ? 8 : 3}
+                                disabled={isAnalyzingImage}
+                            />
+                        </div>
                          {isAnalyzingImage && <div className="text-sm text-center text-neutral-400 mt-2">Analyzing image...</div>}
                     </div>
 

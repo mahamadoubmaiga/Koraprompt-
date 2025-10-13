@@ -17,6 +17,7 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+// Migration function to ensure all prompts have the new fields.
 const migratePrompt = (p: any): SavedPrompt => ({
   ...p,
   likes: p.likes ?? 0,
@@ -27,6 +28,7 @@ const getStorage = <T,>(key: string): T[] => {
     const item = localStorage.getItem(key);
     const data = item ? JSON.parse(item) : [];
     if (key === 'kora-prompts') {
+        // Ensure all loaded prompts are migrated to the latest schema
         return data.map(migratePrompt);
     }
     return data;
@@ -65,10 +67,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const addPrompt = (promptData: Omit<SavedPrompt, 'id'>) => {
     const newPrompt: SavedPrompt = { 
-      ...(promptData as Omit<SavedPrompt, 'id' | 'likes' | 'likedBy'>), 
-      id: `prompt_${Date.now()}`,
-      likes: 0,
-      likedBy: [],
+      ...promptData, 
+      id: `prompt_${Date.now()}`
     };
     const updatedPrompts = [newPrompt, ...allPrompts];
     setAllPrompts(updatedPrompts);
