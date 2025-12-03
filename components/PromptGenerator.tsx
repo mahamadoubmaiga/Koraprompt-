@@ -10,7 +10,6 @@ import { CheckIcon } from './icons/CheckIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { PhotoIcon } from './icons/PhotoIcon';
-import { MusicNoteIcon } from './icons/MusicNoteIcon';
 
 interface PromptGeneratorProps {
     remixState: RemixState | null;

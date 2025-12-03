@@ -77,6 +77,7 @@ export const generatePrompts = async (
     if (negativePrompt) {
         userPrompt += `\nNegative Prompt (things to avoid in all prompts): "${negativePrompt}"`;
     }
+    // Aspect ratio only applies to image generation - video and audio don't use this parameter
     if (aspectRatio && type === 'image') {
         userPrompt += `\nAspect Ratio: ${aspectRatio}. If the generator supports it (e.g., MidJourney), include the aspect ratio parameter (like '--ar ${aspectRatio}') in the prompt(s).`;
     }

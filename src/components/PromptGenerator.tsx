@@ -11,7 +11,6 @@ import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { PhotoIcon } from './icons/PhotoIcon';
 import { CloseIcon } from './icons/CloseIcon';
-import { MusicNoteIcon } from './icons/MusicNoteIcon';
 
 interface PromptGeneratorProps {
     remixState: RemixState | null;
