@@ -5,7 +5,7 @@ export enum Language {
 
 export type Page = 'home' | 'generator' | 'explore' | 'dashboard' | 'faq' | 'profile';
 
-export type PromptType = 'video' | 'image';
+export type PromptType = 'video' | 'image' | 'audio';
 
 export interface User {
   id: string;
