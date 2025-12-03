@@ -4,6 +4,32 @@ import { PromptType } from "../types";
 // Fix: Initialize GoogleGenAI directly with apiKey from process.env as per guidelines.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+const getMediaTypeDescription = (type: PromptType): string => {
+    switch (type) {
+        case 'video':
+            return 'AI video generators';
+        case 'image':
+            return 'AI image generators';
+        case 'audio':
+            return 'AI music and audio generators';
+        default:
+            return 'AI generators';
+    }
+};
+
+const getPromptGuidelines = (type: PromptType): string => {
+    switch (type) {
+        case 'video':
+            return 'Include details about cinematography, camera movements, lighting, atmosphere, pacing, and visual style. Consider shot composition, transitions, and mood.';
+        case 'image':
+            return 'Include details about composition, lighting, color palette, artistic style, camera angle, and visual atmosphere. Consider texture, mood, and artistic references.';
+        case 'audio':
+            return 'Include details about genre, tempo (BPM), mood, instruments, vocals (if any), production style, song structure, and overall vibe. Consider dynamics, energy level, and musical references.';
+        default:
+            return '';
+    }
+};
+
 export const generatePrompts = async (
     idea: string,
     type: PromptType,
@@ -19,24 +45,29 @@ export const generatePrompts = async (
     // Fix: Removed mock logic for when API_KEY is not set, as per guidelines.
     const languageInstruction = language === 'fr' ? 'The final prompt(s) must be in French.' : 'The final prompt(s) must be in English.';
     const isSequence = promptCount > 1;
+    const mediaTypeDesc = getMediaTypeDescription(type);
+    const promptGuidelines = getPromptGuidelines(type);
 
     let systemInstruction: string;
     let userPrompt = `
     AI Generator: ${generator}
-    Category: ${category}
+    Category/Genre: ${category}
     Media Type: ${type}
     `;
 
     if (isSequence) {
-        systemInstruction = `You are a world-class scriptwriter and prompt engineering expert for AI ${type} generators.
-        Your task is to take a user's story idea and break it down into ${promptCount} coherent scenes/prompts. 
+        const sequenceLabel = type === 'audio' ? 'tracks/sections' : 'scenes/prompts';
+        systemInstruction = `You are a world-class creative director and prompt engineering expert for ${mediaTypeDesc}.
+        Your task is to take a user's idea and break it down into ${promptCount} coherent ${sequenceLabel}. 
         Each prompt should be detailed, rich, and optimized for the specified AI generator, building upon the previous one to create a logical sequence.
+        ${promptGuidelines}
         You must ONLY output a JSON array of strings, where each string is a complete, ready-to-use prompt. Do not include any other text or markdown.
         ${languageInstruction}`;
-        userPrompt += `\nStory Idea: "${idea}"\nBreak this down into ${promptCount} prompts.`;
+        userPrompt += `\nCreative Idea: "${idea}"\nBreak this down into ${promptCount} prompts.`;
     } else {
-        systemInstruction = `You are a world-class prompt engineering expert for AI ${type} generators. 
+        systemInstruction = `You are a world-class prompt engineering expert for ${mediaTypeDesc}. 
         Your task is to take a user's simple idea and transform it into a highly detailed, rich, and optimized prompt tailored for a specific AI generator.
+        ${promptGuidelines}
         The prompt should be descriptive, evocative, and include specific technical details relevant to the generator and media type.
         You must ONLY output the final prompt text. Do not include any introductory phrases, explanations, or markdown formatting. Just the raw, ready-to-use prompt.
         ${languageInstruction}`;
@@ -46,7 +77,7 @@ export const generatePrompts = async (
     if (negativePrompt) {
         userPrompt += `\nNegative Prompt (things to avoid in all prompts): "${negativePrompt}"`;
     }
-    if (aspectRatio) {
+    if (aspectRatio && type === 'image') {
         userPrompt += `\nAspect Ratio: ${aspectRatio}. If the generator supports it (e.g., MidJourney), include the aspect ratio parameter (like '--ar ${aspectRatio}') in the prompt(s).`;
     }
 

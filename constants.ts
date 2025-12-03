@@ -1,33 +1,127 @@
 import { Generator, Template } from './types';
 
 export const GENERATORS: Generator[] = [
-    { id: 'veo', name: 'Veo', type: 'video' },
-    { id: 'runway', name: 'Runway', type: 'video' },
-    { id: 'pika', name: 'Pika', type: 'video' },
-    { id: 'sora', name: 'Sora', type: 'video' },
-    { id: 'kling', name: 'Kling', type: 'video' },
+    // Video Generators
+    { id: 'veo', name: 'Veo (Google)', type: 'video' },
+    { id: 'veo2', name: 'Veo 2 (Google)', type: 'video' },
+    { id: 'runway', name: 'Runway Gen-3 Alpha', type: 'video' },
+    { id: 'runway-gen2', name: 'Runway Gen-2', type: 'video' },
+    { id: 'pika', name: 'Pika 1.5', type: 'video' },
+    { id: 'pika2', name: 'Pika 2.0', type: 'video' },
+    { id: 'sora', name: 'Sora (OpenAI)', type: 'video' },
+    { id: 'kling', name: 'Kling 1.6', type: 'video' },
+    { id: 'kling-pro', name: 'Kling Pro', type: 'video' },
     { id: 'luma', name: 'Luma Dream Machine', type: 'video' },
-    { id: 'midjourney', name: 'MidJourney', type: 'image' },
-    { id: 'stable-diffusion', name: 'Stable Diffusion', type: 'image' },
+    { id: 'luma-ray2', name: 'Luma Ray2', type: 'video' },
+    { id: 'haiper', name: 'Haiper', type: 'video' },
+    { id: 'hailuo', name: 'Hailuo AI (MiniMax)', type: 'video' },
+    { id: 'genmo', name: 'Genmo Mochi', type: 'video' },
+    { id: 'animatediff', name: 'AnimateDiff', type: 'video' },
+    { id: 'stable-video', name: 'Stable Video Diffusion', type: 'video' },
+    { id: 'cogvideox', name: 'CogVideoX', type: 'video' },
+    { id: 'hotshot', name: 'Hotshot XL', type: 'video' },
+    { id: 'morph-studio', name: 'Morph Studio', type: 'video' },
+    { id: 'invideo', name: 'InVideo AI', type: 'video' },
+    { id: 'synthesia', name: 'Synthesia', type: 'video' },
+    { id: 'heygen', name: 'HeyGen', type: 'video' },
+    { id: 'domo', name: 'Domo AI', type: 'video' },
+    { id: 'ltx-video', name: 'LTX Video', type: 'video' },
+    { id: 'wan-video', name: 'Wan Video (Alibaba)', type: 'video' },
+    
+    // Image Generators
+    { id: 'midjourney', name: 'MidJourney v6.1', type: 'image' },
+    { id: 'midjourney-niji', name: 'MidJourney Niji', type: 'image' },
+    { id: 'stable-diffusion', name: 'Stable Diffusion 3.5', type: 'image' },
+    { id: 'sdxl', name: 'Stable Diffusion XL', type: 'image' },
     { id: 'dalle', name: 'DALL·E 3', type: 'image' },
-    { id: 'ideogram', name: 'Ideogram', type: 'image' },
+    { id: 'ideogram', name: 'Ideogram 2.0', type: 'image' },
     { id: 'firefly', name: 'Adobe Firefly', type: 'image' },
     { id: 'leonardo', name: 'Leonardo.Ai', type: 'image' },
+    { id: 'flux', name: 'Flux Pro 1.1', type: 'image' },
+    { id: 'flux-schnell', name: 'Flux Schnell', type: 'image' },
+    { id: 'flux-dev', name: 'Flux Dev', type: 'image' },
+    { id: 'imagen', name: 'Imagen 3 (Google)', type: 'image' },
+    { id: 'imagefx', name: 'ImageFX (Google)', type: 'image' },
+    { id: 'freepik', name: 'Freepik AI', type: 'image' },
+    { id: 'canva-ai', name: 'Canva AI', type: 'image' },
+    { id: 'bing-image', name: 'Bing Image Creator', type: 'image' },
+    { id: 'playground', name: 'Playground AI', type: 'image' },
+    { id: 'nightcafe', name: 'NightCafe', type: 'image' },
+    { id: 'dreamstudio', name: 'DreamStudio', type: 'image' },
+    { id: 'starryai', name: 'StarryAI', type: 'image' },
+    { id: 'artbreeder', name: 'Artbreeder', type: 'image' },
+    { id: 'craiyon', name: 'Craiyon', type: 'image' },
+    { id: 'dezgo', name: 'Dezgo', type: 'image' },
+    { id: 'photosonic', name: 'Photosonic', type: 'image' },
+    { id: 'getimg', name: 'Getimg.ai', type: 'image' },
+    { id: 'lexica', name: 'Lexica', type: 'image' },
+    { id: 'openart', name: 'OpenArt', type: 'image' },
+    { id: 'krea', name: 'KREA AI', type: 'image' },
+    { id: 'recraft', name: 'Recraft V3', type: 'image' },
+    { id: 'civitai', name: 'Civitai', type: 'image' },
+    { id: 'tensor-art', name: 'Tensor.Art', type: 'image' },
+    
+    // Audio/Music Generators
+    { id: 'suno', name: 'Suno AI', type: 'audio' },
+    { id: 'suno-v4', name: 'Suno v4', type: 'audio' },
+    { id: 'udio', name: 'Udio', type: 'audio' },
+    { id: 'musicgen', name: 'MusicGen (Meta)', type: 'audio' },
+    { id: 'stable-audio', name: 'Stable Audio', type: 'audio' },
+    { id: 'stable-audio-2', name: 'Stable Audio 2.0', type: 'audio' },
+    { id: 'audiocraft', name: 'AudioCraft (Meta)', type: 'audio' },
+    { id: 'riffusion', name: 'Riffusion', type: 'audio' },
+    { id: 'mubert', name: 'Mubert', type: 'audio' },
+    { id: 'aiva', name: 'AIVA', type: 'audio' },
+    { id: 'soundraw', name: 'Soundraw', type: 'audio' },
+    { id: 'boomy', name: 'Boomy', type: 'audio' },
+    { id: 'loudme', name: 'LoudMe', type: 'audio' },
+    { id: 'beatoven', name: 'Beatoven.ai', type: 'audio' },
+    { id: 'soundful', name: 'Soundful', type: 'audio' },
+    { id: 'amper', name: 'Amper Music', type: 'audio' },
+    { id: 'ecrett', name: 'Ecrett Music', type: 'audio' },
+    { id: 'loudly', name: 'Loudly', type: 'audio' },
+    { id: 'jukedeck', name: 'Jukedeck', type: 'audio' },
+    { id: 'splash', name: 'Splash Pro', type: 'audio' },
+    { id: 'magenta', name: 'Magenta (Google)', type: 'audio' },
+    { id: 'jukebox', name: 'Jukebox (OpenAI)', type: 'audio' },
+    { id: 'musiclm', name: 'MusicLM (Google)', type: 'audio' },
+    { id: 'bark', name: 'Bark (Suno)', type: 'audio' },
+    { id: 'elevenlabs-music', name: 'ElevenLabs Music', type: 'audio' },
+    { id: 'lovo', name: 'LOVO AI', type: 'audio' },
+    { id: 'voicemod', name: 'Voicemod', type: 'audio' },
 ];
 
-export const VIDEO_CATEGORIES = ['cinematic', 'tiktok', 'surreal', 'action', 'storytelling', 'music_video'];
-export const IMAGE_CATEGORIES = ['portrait', 'landscape', 'logo', 'surreal', 'realistic', 'fashion'];
+export const VIDEO_CATEGORIES = ['cinematic', 'tiktok', 'surreal', 'action', 'storytelling', 'music_video', 'animation', 'documentary', 'commercial', 'vlog', 'tutorial', 'short_film'];
+export const IMAGE_CATEGORIES = ['portrait', 'landscape', 'logo', 'surreal', 'realistic', 'fashion', 'abstract', 'fantasy', 'sci_fi', 'anime', 'concept_art', 'product', 'architectural', 'food', 'nature', 'illustration'];
+export const AUDIO_CATEGORIES = ['pop', 'rock', 'electronic', 'hip_hop', 'classical', 'jazz', 'ambient', 'cinematic_score', 'lo_fi', 'edm', 'folk', 'country', 'r_and_b', 'metal', 'indie', 'soundtrack', 'podcast_intro', 'jingle', 'meditation', 'world_music'];
 
 export const TEMPLATES: Template[] = [
+    // Video Templates
     { id: 'v1', name: 'Cinematic Drone Shot', prompt: 'Epic 4K cinematic drone footage of a lone hiker on a snowy mountain peak at sunrise, dramatic lighting, lens flare, sweeping orchestral score, ultra-realistic.', type: 'video', category: 'cinematic', generator: 'veo', imageUrl: 'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&cs=tinysrgb&w=600' },
     { id: 'v2', name: 'Viral TikTok Dance', prompt: 'High-energy, fast-paced dance video, vibrant neon background, catchy pop song, quick cuts, energetic transitions, trending on TikTok.', type: 'video', category: 'tiktok', generator: 'pika', imageUrl: 'https://images.pexels.com/photos/7187375/pexels-photo-7187375.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'v3', name: 'Explosive Action Scene', prompt: 'A chaotic car chase scene in a cyberpunk city at night, rain-slicked streets, neon reflections, explosions, intense motion blur, high-octane action, sound of screeching tires and heavy synthwave music.', type: 'video', category: 'action', generator: 'runway', imageUrl: 'https://images.pexels.com/photos/325185/pexels-photo-325185.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'v4', name: 'Anime Opening', prompt: 'Dynamic anime opening sequence with cherry blossoms, high school setting, dramatic character reveals, speed lines, J-pop energy, 2D animation style, Studio Bones quality.', type: 'video', category: 'animation', generator: 'animatediff', imageUrl: 'https://images.pexels.com/photos/3631430/pexels-photo-3631430.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'v5', name: 'Documentary Nature Shot', prompt: 'BBC nature documentary style footage of a majestic lion walking through golden African savanna at sunset, David Attenborough narration mood, 8K ultra HD, shallow depth of field.', type: 'video', category: 'documentary', generator: 'sora', imageUrl: 'https://images.pexels.com/photos/247502/pexels-photo-247502.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    
+    // Image Templates
     { id: 'i1', name: 'Photorealistic Portrait', prompt: 'Ultra-realistic portrait of an elderly woman with deep wrinkles, soft natural light, shallow depth of field, 85mm lens, detailed skin texture, award-winning photography. --ar 4:3', type: 'image', category: 'portrait', generator: 'midjourney', imageUrl: 'https://images.pexels.com/photos/943084/pexels-photo-943084.jpeg?auto=compress&cs=tinysrgb&w=600' },
     { id: 'i2', name: 'Surreal Landscape', prompt: 'A breathtaking surreal landscape with floating islands, giant glowing mushrooms, and a river of stars, fantasy art style, vibrant colors, highly detailed, by Studio Ghibli.', type: 'image', category: 'surreal', generator: 'dalle', imageUrl: 'https://images.pexels.com/photos/2832034/pexels-photo-2832034.jpeg?auto=compress&cs=tinysrgb&w=600' },
-    { id: 'v3', name: 'Explosive Action Scene', prompt: 'A chaotic car chase scene in a cyberpunk city at night, rain-slicked streets, neon reflections, explosions, intense motion blur, high-octane action, sound of screeching tires and heavy synthwave music.', type: 'video', category: 'action', generator: 'runway', imageUrl: 'https://images.pexels.com/photos/325185/pexels-photo-325185.jpeg?auto=compress&cs=tinysrgb&w=600' },
     { id: 'i3', name: 'Minimalist Logo Design', prompt: 'Clean, minimalist logo design for a coffee shop named "Aura", a simple line art of a coffee cup with a subtle halo effect, on a white background, vector graphic.', type: 'image', category: 'logo', generator: 'ideogram', imageUrl: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'i4', name: 'Anime Character', prompt: 'Beautiful anime girl with long flowing silver hair, cherry blossom petals, soft lighting, detailed eyes, Makoto Shinkai style, 4K wallpaper quality.', type: 'image', category: 'anime', generator: 'midjourney-niji', imageUrl: 'https://images.pexels.com/photos/3631430/pexels-photo-3631430.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'i5', name: 'Product Photography', prompt: 'Professional product photography of a luxury perfume bottle, dramatic studio lighting, reflective black surface, smoke effects, high-end commercial aesthetic, 8K resolution.', type: 'image', category: 'product', generator: 'flux', imageUrl: 'https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'i6', name: 'Sci-Fi Concept Art', prompt: 'Massive spacecraft hangar with workers and vehicles, volumetric lighting, dystopian atmosphere, intricate mechanical details, concept art style, trending on ArtStation.', type: 'image', category: 'sci_fi', generator: 'stable-diffusion', imageUrl: 'https://images.pexels.com/photos/2156/sky-earth-space-working.jpg?auto=compress&cs=tinysrgb&w=600' },
+    
+    // Audio Templates
+    { id: 'a1', name: 'Epic Cinematic Score', prompt: 'Epic orchestral film score with powerful brass, soaring strings, dramatic percussion, Hans Zimmer style, emotional crescendo, suitable for movie trailer, 120 BPM.', type: 'audio', category: 'cinematic_score', generator: 'suno', imageUrl: 'https://images.pexels.com/photos/995301/pexels-photo-995301.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'a2', name: 'Lo-Fi Study Beats', prompt: 'Chill lo-fi hip hop beat with jazzy piano chords, vinyl crackle, mellow drums, rainy day vibes, perfect for studying and relaxation, 85 BPM, 4 minutes.', type: 'audio', category: 'lo_fi', generator: 'udio', imageUrl: 'https://images.pexels.com/photos/6899260/pexels-photo-6899260.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'a3', name: 'EDM Festival Anthem', prompt: 'High energy EDM festival banger with euphoric synth leads, powerful drops, punchy bass, hands-up moments, progressive house style, 128 BPM, radio-ready.', type: 'audio', category: 'edm', generator: 'stable-audio', imageUrl: 'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'a4', name: 'Acoustic Folk Song', prompt: 'Warm acoustic folk song with fingerpicked guitar, harmonica solo, heartfelt male vocals singing about wandering and home, Americana style, campfire feeling, 100 BPM.', type: 'audio', category: 'folk', generator: 'musicgen', imageUrl: 'https://images.pexels.com/photos/1407322/pexels-photo-1407322.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'a5', name: 'Podcast Intro Jingle', prompt: 'Professional podcast intro jingle, 15 seconds, upbeat and modern, tech/entrepreneurship vibe, clean electronic production, memorable hook, suitable for business podcast.', type: 'audio', category: 'podcast_intro', generator: 'soundraw', imageUrl: 'https://images.pexels.com/photos/3783471/pexels-photo-3783471.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 'a6', name: 'Meditation Ambient', prompt: 'Peaceful meditation ambient music with soft pads, gentle nature sounds, Tibetan singing bowls, 432 Hz tuning, theta wave inducing, 20 minutes, for deep relaxation and mindfulness.', type: 'audio', category: 'meditation', generator: 'mubert', imageUrl: 'https://images.pexels.com/photos/3560044/pexels-photo-3560044.jpeg?auto=compress&cs=tinysrgb&w=600' },
 ];
 
 export const SURPRISE_ME_IDEAS: string[] = [
+    // Visual Ideas
     'A library where the books fly like birds.',
     'A city built inside a giant, ancient tree.',
     'An astronaut discovering a garden on the moon.',
@@ -38,4 +132,17 @@ export const SURPRISE_ME_IDEAS: string[] = [
     'A futuristic car race through a neon-lit city.',
     'A magical forest where plants glow in the dark.',
     'Two cats having a sophisticated conversation over tea.',
+    'An underwater metropolis with bioluminescent architecture.',
+    'A phoenix rising from ashes in a cosmic nebula.',
+    'A samurai meditating under a cherry blossom tree at sunset.',
+    
+    // Audio Ideas
+    'A jazz fusion track with space-age synthesizers.',
+    'An emotional piano ballad about lost love.',
+    'An upbeat summer pop song for beach vibes.',
+    'A dark ambient soundtrack for a horror game.',
+    'A triumphant orchestral theme for a hero\'s victory.',
+    'A groovy funk track with slap bass and wah guitar.',
+    'A serene acoustic lullaby for peaceful sleep.',
+    'An energetic workout playlist opener with driving beats.',
 ];
