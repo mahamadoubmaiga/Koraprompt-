@@ -3,7 +3,7 @@ import { useTranslations } from '../hooks/useTranslations';
 import { PromptType, SavedPrompt, RemixState, Preset } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
-import { GENERATORS, VIDEO_CATEGORIES, IMAGE_CATEGORIES, SURPRISE_ME_IDEAS } from '../constants';
+import { GENERATORS, VIDEO_CATEGORIES, IMAGE_CATEGORIES, AUDIO_CATEGORIES, SURPRISE_ME_IDEAS } from '../constants';
 import { generatePrompts, generateImageFromPrompt, generatePromptFromImage } from '../services/geminiService';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { CheckIcon } from './icons/CheckIcon';
@@ -11,6 +11,7 @@ import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { PhotoIcon } from './icons/PhotoIcon';
 import { CloseIcon } from './icons/CloseIcon';
+import { MusicNoteIcon } from './icons/MusicNoteIcon';
 
 interface PromptGeneratorProps {
     remixState: RemixState | null;
@@ -71,7 +72,13 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
         setActiveTab(tab);
         const firstGenerator = GENERATORS.find(g => g.type === tab);
         setSelectedGenerator(firstGenerator?.id || '');
-        setSelectedCategory(tab === 'video' ? VIDEO_CATEGORIES[0] : IMAGE_CATEGORIES[0]);
+        if (tab === 'video') {
+            setSelectedCategory(VIDEO_CATEGORIES[0]);
+        } else if (tab === 'image') {
+            setSelectedCategory(IMAGE_CATEGORIES[0]);
+        } else {
+            setSelectedCategory(AUDIO_CATEGORIES[0]);
+        }
         resetGenerationState();
         setAspectRatio('1:1');
     };
@@ -234,7 +241,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
     };
 
     const currentGenerators = GENERATORS.filter(g => g.type === activeTab);
-    const currentCategories = activeTab === 'video' ? VIDEO_CATEGORIES : IMAGE_CATEGORIES;
+    const currentCategories = activeTab === 'video' ? VIDEO_CATEGORIES : activeTab === 'image' ? IMAGE_CATEGORIES : AUDIO_CATEGORIES;
     
     return (
         <div className="container mx-auto px-6 py-12">
@@ -246,6 +253,9 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                     </button>
                     <button onClick={() => handleTabChange('image')} className={`px-6 py-3 font-semibold text-lg transition-colors ${activeTab === 'image' ? 'text-brand-primary border-b-2 border-brand-primary' : 'text-neutral-400'}`}>
                         {t('image_prompts')}
+                    </button>
+                    <button onClick={() => handleTabChange('audio')} className={`px-6 py-3 font-semibold text-lg transition-colors ${activeTab === 'audio' ? 'text-brand-primary border-b-2 border-brand-primary' : 'text-neutral-400'}`}>
+                        {t('audio_prompts')}
                     </button>
                 </div>
 
@@ -286,7 +296,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                                 id="idea"
                                 value={userInput}
                                 onChange={(e) => setUserInput(e.target.value)}
-                                placeholder={mode === 'single' ? t('your_idea_placeholder') : t('project_idea_placeholder')}
+                                placeholder={mode === 'single' ? (activeTab === 'audio' ? t('audio_idea_placeholder') : t('your_idea_placeholder')) : t('project_idea_placeholder')}
                                 className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
                                 rows={imagePreview ? 8 : 3}
                                 disabled={isAnalyzingImage}
@@ -317,7 +327,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                             </div>
                         ) : (
                             <div>
-                               <label htmlFor="category" className="block text-sm font-medium text-neutral-300 mb-2">{t('category_label')}</label>
+                               <label htmlFor="category" className="block text-sm font-medium text-neutral-300 mb-2">{activeTab === 'audio' ? t('genre_label') : t('category_label')}</label>
                                <select id="category" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition">
                                    {currentCategories.map(c => <option key={c} value={c}>{t(c as any)}</option>)}
                                </select>
@@ -340,7 +350,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                                     id="negative-prompt"
                                     value={negativePrompt}
                                     onChange={(e) => setNegativePrompt(e.target.value)}
-                                    placeholder={t('negative_prompt_placeholder')}
+                                    placeholder={activeTab === 'audio' ? t('audio_negative_placeholder') : t('negative_prompt_placeholder')}
                                     className="w-full bg-neutral-900 border border-neutral-600 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
                                     rows={2}
                                 />
@@ -404,7 +414,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                                         <div className="space-y-6">
                                             {generatedPrompts.map((prompt, index) => (
                                                 <div key={index} className="bg-neutral-900 p-4 rounded-md">
-                                                    {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{t('scene_prefix')} {index + 1}</h3>}
+                                                    {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{activeTab === 'audio' ? t('track_prefix') : t('scene_prefix')} {index + 1}</h3>}
                                                     <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
                                                     <div className="mt-3">
                                                         <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
