@@ -104,26 +104,96 @@ export async function deletePreset(id: string): Promise<void> {
 // ============================================
 
 export async function createSavedPrompt(prompt: Omit<SavedPrompt, 'id'>): Promise<SavedPrompt> {
-  const result = await sql`
-    INSERT INTO saved_prompts (
-      type, prompts, versions, generator, user_input, project_name,
-      date, generated_image, user_id, folder_id, is_published
-    )
-    VALUES (
-      ${prompt.type},
-      ${prompt.prompts}::text[],
-      ${JSON.stringify(prompt.versions)}::jsonb,
-      ${prompt.generator},
-      ${prompt.userInput},
-      ${prompt.projectName},
-      ${prompt.date}::timestamp,
-      ${prompt.generatedImage || null},
-      ${prompt.userId ? sql`${prompt.userId}::uuid` : null},
-      ${prompt.folderId ? sql`${prompt.folderId}::uuid` : null},
-      ${prompt.isPublished}
-    )
-    RETURNING *
-  `;
+  // Handle nullable UUID fields separately to avoid nested template literals
+  const userId = prompt.userId || null;
+  const folderId = prompt.folderId || null;
+  
+  let result;
+  if (userId && folderId) {
+    result = await sql`
+      INSERT INTO saved_prompts (
+        type, prompts, versions, generator, user_input, project_name,
+        date, generated_image, user_id, folder_id, is_published
+      )
+      VALUES (
+        ${prompt.type},
+        ${prompt.prompts}::text[],
+        ${JSON.stringify(prompt.versions)}::jsonb,
+        ${prompt.generator},
+        ${prompt.userInput},
+        ${prompt.projectName},
+        ${prompt.date}::timestamp,
+        ${prompt.generatedImage || null},
+        ${userId}::uuid,
+        ${folderId}::uuid,
+        ${prompt.isPublished}
+      )
+      RETURNING *
+    `;
+  } else if (userId) {
+    result = await sql`
+      INSERT INTO saved_prompts (
+        type, prompts, versions, generator, user_input, project_name,
+        date, generated_image, user_id, folder_id, is_published
+      )
+      VALUES (
+        ${prompt.type},
+        ${prompt.prompts}::text[],
+        ${JSON.stringify(prompt.versions)}::jsonb,
+        ${prompt.generator},
+        ${prompt.userInput},
+        ${prompt.projectName},
+        ${prompt.date}::timestamp,
+        ${prompt.generatedImage || null},
+        ${userId}::uuid,
+        NULL,
+        ${prompt.isPublished}
+      )
+      RETURNING *
+    `;
+  } else if (folderId) {
+    result = await sql`
+      INSERT INTO saved_prompts (
+        type, prompts, versions, generator, user_input, project_name,
+        date, generated_image, user_id, folder_id, is_published
+      )
+      VALUES (
+        ${prompt.type},
+        ${prompt.prompts}::text[],
+        ${JSON.stringify(prompt.versions)}::jsonb,
+        ${prompt.generator},
+        ${prompt.userInput},
+        ${prompt.projectName},
+        ${prompt.date}::timestamp,
+        ${prompt.generatedImage || null},
+        NULL,
+        ${folderId}::uuid,
+        ${prompt.isPublished}
+      )
+      RETURNING *
+    `;
+  } else {
+    result = await sql`
+      INSERT INTO saved_prompts (
+        type, prompts, versions, generator, user_input, project_name,
+        date, generated_image, user_id, folder_id, is_published
+      )
+      VALUES (
+        ${prompt.type},
+        ${prompt.prompts}::text[],
+        ${JSON.stringify(prompt.versions)}::jsonb,
+        ${prompt.generator},
+        ${prompt.userInput},
+        ${prompt.projectName},
+        ${prompt.date}::timestamp,
+        ${prompt.generatedImage || null},
+        NULL,
+        NULL,
+        ${prompt.isPublished}
+      )
+      RETURNING *
+    `;
+  }
   return mapSavedPromptFromDb(result[0]);
 }
 
@@ -150,20 +220,41 @@ export async function getSavedPromptById(id: string): Promise<SavedPrompt | null
 }
 
 export async function updateSavedPrompt(prompt: SavedPrompt): Promise<SavedPrompt> {
-  const result = await sql`
-    UPDATE saved_prompts SET
-      type = ${prompt.type},
-      prompts = ${prompt.prompts}::text[],
-      versions = ${JSON.stringify(prompt.versions)}::jsonb,
-      generator = ${prompt.generator},
-      user_input = ${prompt.userInput},
-      project_name = ${prompt.projectName},
-      generated_image = ${prompt.generatedImage || null},
-      folder_id = ${prompt.folderId ? sql`${prompt.folderId}::uuid` : null},
-      is_published = ${prompt.isPublished}
-    WHERE id = ${prompt.id}::uuid
-    RETURNING *
-  `;
+  // Handle nullable folder_id field separately to avoid nested template literals
+  const folderId = prompt.folderId || null;
+  
+  let result;
+  if (folderId) {
+    result = await sql`
+      UPDATE saved_prompts SET
+        type = ${prompt.type},
+        prompts = ${prompt.prompts}::text[],
+        versions = ${JSON.stringify(prompt.versions)}::jsonb,
+        generator = ${prompt.generator},
+        user_input = ${prompt.userInput},
+        project_name = ${prompt.projectName},
+        generated_image = ${prompt.generatedImage || null},
+        folder_id = ${folderId}::uuid,
+        is_published = ${prompt.isPublished}
+      WHERE id = ${prompt.id}::uuid
+      RETURNING *
+    `;
+  } else {
+    result = await sql`
+      UPDATE saved_prompts SET
+        type = ${prompt.type},
+        prompts = ${prompt.prompts}::text[],
+        versions = ${JSON.stringify(prompt.versions)}::jsonb,
+        generator = ${prompt.generator},
+        user_input = ${prompt.userInput},
+        project_name = ${prompt.projectName},
+        generated_image = ${prompt.generatedImage || null},
+        folder_id = NULL,
+        is_published = ${prompt.isPublished}
+      WHERE id = ${prompt.id}::uuid
+      RETURNING *
+    `;
+  }
   return mapSavedPromptFromDb(result[0]);
 }
 
