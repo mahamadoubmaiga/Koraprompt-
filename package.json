@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migrate": "psql $DATABASE_URL -f db/migrations/001_initial_schema.sql",
+    "db:check": "psql $DATABASE_URL -c '\\dt'"
   },
   "dependencies": {
     "@google/genai": "^1.24.0",
+    "@neondatabase/serverless": "^0.10.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
