@@ -1,8 +1,27 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { PromptType } from "../types";
 
-// Adhere to guideline: Initialize directly and assume API_KEY is present.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to get environment variable safely
+const getApiKey = () => {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+        // @ts-ignore
+        if (import.meta.env.VITE_API_KEY) return import.meta.env.VITE_API_KEY;
+        // @ts-ignore
+        if (import.meta.env.API_KEY) return import.meta.env.API_KEY;
+    }
+
+    // Fallback to process.env (handled by vite define or node)
+    try {
+        if (process.env.API_KEY) return process.env.API_KEY;
+    } catch (e) {
+        // ignore
+    }
+    return '';
+};
+
+const apiKey = getApiKey();
+const ai = new GoogleGenAI({ apiKey });
 
 const getMediaTypeDescription = (type: PromptType): string => {
     switch (type) {
