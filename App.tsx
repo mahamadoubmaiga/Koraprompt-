@@ -55,9 +55,12 @@ const AppContent: React.FC = () => {
             <main className="flex-grow">
                 {renderPage()}
             </main>
-            <footer className="bg-neutral-800 border-t border-neutral-700 py-6">
-                <div className="container mx-auto px-6 text-center text-neutral-400 text-sm">
-                    &copy; {new Date().getFullYear()} KoraPrompt. All rights reserved.
+            <footer className="glass-effect border-t border-neutral-700/50 py-8 mt-20">
+                <div className="container mx-auto px-6 text-center">
+                    <div className="text-neutral-400 text-sm">
+                        <p className="mb-2">&copy; {new Date().getFullYear()} <span className="font-semibold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">KoraPrompt</span>. All rights reserved.</p>
+                        <p className="text-xs text-neutral-500">Powered by AI • Designed for Creators</p>
+                    </div>
                 </div>
             </footer>
             {isAuthModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} />}
