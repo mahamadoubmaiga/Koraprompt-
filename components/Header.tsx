@@ -34,20 +34,25 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage, onLoginCli
     };
 
     return (
-        <header className="bg-neutral-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-neutral-700">
+        <header className="glass-effect sticky top-0 z-50 border-b border-neutral-700/50 shadow-lg">
             <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center space-x-8">
-                    <button onClick={() => setPage('home')} className="text-2xl font-bold text-white">
-                        Kora<span className="text-brand-primary">Prompt</span>
+                    <button onClick={() => setPage('home')} className="text-2xl font-bold text-white group">
+                        <span className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent bg-clip-text text-transparent">Kora</span>
+                        <span className="text-white group-hover:text-brand-light transition-colors">Prompt</span>
                     </button>
-                    <ul className="hidden md:flex items-center space-x-6">
+                    <ul className="hidden md:flex items-center space-x-2">
                         {navItems.map(item => {
                             if (item.authRequired && !user) return null;
                             return (
                                 <li key={item.page}>
                                     <button
                                         onClick={() => setPage(item.page)}
-                                        className={`text-neutral-200 hover:text-brand-primary transition-colors duration-200 ${currentPage === item.page ? 'text-brand-primary font-semibold' : ''}`}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                                            currentPage === item.page 
+                                                ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-glow' 
+                                                : 'text-neutral-300 hover:text-white hover:bg-neutral-800/50'
+                                        }`}
                                     >
                                         {item.label}
                                     </button>
@@ -58,16 +63,16 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage, onLoginCli
                 </div>
                 <div className="flex items-center space-x-4">
                     <div className="relative">
-                        <button onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)} className="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 transition-colors">
+                        <button onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-neutral-800/50 transition-all duration-300">
                             {language === 'fr' ? <FrFlag/> : <EnFlag/>}
                             <ChevronDownIcon className="w-4 h-4 text-neutral-400" />
                         </button>
                         {isLangDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-36 bg-neutral-800 rounded-md shadow-lg py-1">
-                                <button onClick={() => handleLanguageChange(Language.EN)} className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">
+                            <div className="absolute right-0 mt-2 w-36 glass-effect rounded-lg shadow-card overflow-hidden animate-slide-up">
+                                <button onClick={() => handleLanguageChange(Language.EN)} className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-neutral-200 hover:bg-brand-primary/20 transition-colors">
                                     <EnFlag/> <span>English</span>
                                 </button>
-                                <button onClick={() => handleLanguageChange(Language.FR)} className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">
+                                <button onClick={() => handleLanguageChange(Language.FR)} className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-neutral-200 hover:bg-brand-primary/20 transition-colors">
                                     <FrFlag/> <span>Français</span>
                                 </button>
                             </div>
@@ -75,13 +80,13 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage, onLoginCli
                     </div>
                     {user ? (
                         <div className="relative">
-                            <button onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)} className="p-2 rounded-full hover:bg-neutral-800 transition-colors">
-                                <UserCircleIcon className="w-6 h-6 text-neutral-300" />
+                            <button onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)} className="p-2 rounded-full hover:bg-neutral-800/50 hover:shadow-glow transition-all duration-300">
+                                <UserCircleIcon className="w-7 h-7 text-brand-light" />
                             </button>
                              {isUserDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-neutral-800 rounded-md shadow-lg py-1">
-                                    <div className="px-4 py-2 text-sm text-neutral-400 border-b border-neutral-700">{user.email}</div>
-                                    <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700">
+                                <div className="absolute right-0 mt-2 w-48 glass-effect rounded-lg shadow-card overflow-hidden animate-slide-up">
+                                    <div className="px-4 py-3 text-sm text-neutral-300 border-b border-neutral-700/50 bg-neutral-900/30">{user.email}</div>
+                                    <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-neutral-200 hover:bg-brand-primary/20 transition-colors">
                                         <LogoutIcon className="w-4 h-4" />
                                         <span>{t('logout_button')}</span>
                                     </button>
@@ -89,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({ setPage, currentPage, onLoginCli
                             )}
                         </div>
                     ) : (
-                         <button onClick={onLoginClick} className="bg-brand-primary text-white px-4 py-2 rounded-md font-semibold hover:bg-brand-secondary transition-colors duration-200">
+                         <button onClick={onLoginClick} className="btn-primary">
                             {t('login_button')}
                         </button>
                     )}
