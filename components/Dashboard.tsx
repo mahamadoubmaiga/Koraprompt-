@@ -15,11 +15,11 @@ import { PlusIcon } from './icons/PlusIcon';
 
 // Reusable Modal Component
 const Modal: React.FC<{ children: React.ReactNode; onClose: () => void; title: string }> = ({ children, onClose, title }) => (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
-        <div className="bg-neutral-800 w-full max-w-2xl rounded-lg shadow-xl border border-neutral-700" onClick={e => e.stopPropagation()}>
-            <div className="p-4 border-b border-neutral-700 flex justify-between items-center">
-                <h2 className="text-xl font-semibold">{title}</h2>
-                <button onClick={onClose} className="text-neutral-400 hover:text-white">&times;</button>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="card-modern w-full max-w-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-neutral-700/50 flex justify-between items-center">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">{title}</h2>
+                <button onClick={onClose} className="text-neutral-400 hover:text-white text-2xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-700/50 transition-all">&times;</button>
             </div>
             <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
         </div>
@@ -33,19 +33,19 @@ const VersionHistoryModal: React.FC<{ prompt: SavedPrompt; onClose: () => void; 
         <Modal onClose={onClose} title={`${t('version_history_title')} "${prompt.projectName}"`}>
             <div className="space-y-4">
                 {prompt.versions.map((version, index) => (
-                    <div key={version.date} className="bg-neutral-900 p-4 rounded-md border border-neutral-700">
-                        <div className="flex justify-between items-center mb-2">
-                            <p className="text-sm text-neutral-400">
+                    <div key={version.date} className="glass-effect p-5 rounded-xl">
+                        <div className="flex justify-between items-center mb-3">
+                            <p className="text-sm text-neutral-400 font-medium">
                                 {new Date(version.date).toLocaleString()}
-                                {index === 0 && <span className="ml-2 text-xs font-semibold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">{t('current_version')}</span>}
+                                {index === 0 && <span className="ml-2 text-xs font-bold text-green-400 bg-green-400/20 px-3 py-1 rounded-full">{t('current_version')}</span>}
                             </p>
-                            {index > 0 && <button onClick={() => onRestore(version)} className="bg-brand-primary text-sm px-3 py-1 rounded-md hover:bg-brand-secondary">{t('restore_version')}</button>}
+                            {index > 0 && <button onClick={() => onRestore(version)} className="btn-primary text-sm px-4 py-2">{t('restore_version')}</button>}
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {version.prompts.map((p, pIndex) => (
                               <div key={pIndex}>
-                                {version.prompts.length > 1 && <h4 className="font-semibold text-brand-light text-sm mb-1">{t('scene_prefix')} {pIndex + 1}</h4>}
-                                <p className="text-neutral-200 text-sm whitespace-pre-wrap">{p}</p>
+                                {version.prompts.length > 1 && <h4 className="font-bold text-brand-light text-sm mb-2">{t('scene_prefix')} {pIndex + 1}</h4>}
+                                <p className="text-neutral-200 text-sm whitespace-pre-wrap leading-relaxed">{p}</p>
                               </div>
                           ))}
                         </div>

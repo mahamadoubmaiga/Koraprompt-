@@ -236,17 +236,22 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
     const currentCategories = activeTab === 'video' ? VIDEO_CATEGORIES : activeTab === 'image' ? IMAGE_CATEGORIES : AUDIO_CATEGORIES;
     
     return (
-        <div className="container mx-auto px-6 py-12">
-            <h1 className="text-4xl font-bold text-center mb-8">{t('prompt_generator_title')}</h1>
+        <div className="container mx-auto px-6 py-16 animate-fade-in">
+            <h1 className="text-5xl font-bold text-center mb-4">
+                <span className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent bg-clip-text text-transparent">
+                    {t('prompt_generator_title')}
+                </span>
+            </h1>
+            <p className="text-center text-neutral-400 text-lg mb-12">Transform your ideas into powerful AI prompts</p>
             <div className="max-w-4xl mx-auto">
-                <div className="flex justify-center border-b border-neutral-700 mb-8">
-                    <button onClick={() => handleTabChange('video')} className={`px-6 py-3 font-semibold text-lg transition-colors ${activeTab === 'video' ? 'text-brand-primary border-b-2 border-brand-primary' : 'text-neutral-400'}`}>
+                <div className="glass-effect rounded-xl p-1.5 inline-flex space-x-1 mb-10 w-full justify-center">
+                    <button onClick={() => handleTabChange('video')} className={`flex-1 px-6 py-3 font-semibold text-lg rounded-lg transition-all duration-300 ${activeTab === 'video' ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-glow' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'}`}>
                         {t('video_prompts')}
                     </button>
-                    <button onClick={() => handleTabChange('image')} className={`px-6 py-3 font-semibold text-lg transition-colors ${activeTab === 'image' ? 'text-brand-primary border-b-2 border-brand-primary' : 'text-neutral-400'}`}>
+                    <button onClick={() => handleTabChange('image')} className={`flex-1 px-6 py-3 font-semibold text-lg rounded-lg transition-all duration-300 ${activeTab === 'image' ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-glow' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'}`}>
                         {t('image_prompts')}
                     </button>
-                    <button onClick={() => handleTabChange('audio')} className={`px-6 py-3 font-semibold text-lg transition-colors ${activeTab === 'audio' ? 'text-brand-primary border-b-2 border-brand-primary' : 'text-neutral-400'}`}>
+                    <button onClick={() => handleTabChange('audio')} className={`flex-1 px-6 py-3 font-semibold text-lg rounded-lg transition-all duration-300 ${activeTab === 'audio' ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-glow' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'}`}>
                         {t('audio_prompts')}
                     </button>
                 </div>
@@ -276,7 +281,7 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                             value={userInput}
                             onChange={(e) => setUserInput(e.target.value)}
                             placeholder={mode === 'single' ? (activeTab === 'audio' ? t('audio_idea_placeholder') : t('your_idea_placeholder')) : t('project_idea_placeholder')}
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition"
+                            className="input-modern w-full"
                             rows={isAnalyzingImage ? 1 : 3}
                             disabled={isAnalyzingImage}
                         />
@@ -285,28 +290,28 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
 
                      <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">{t('generation_mode')}</label>
-                        <div className="flex space-x-1 rounded-md bg-neutral-800 p-1 text-center text-sm font-semibold border border-neutral-700">
-                            <button onClick={() => setMode('single')} className={`w-full py-2 rounded-md transition-colors ${mode === 'single' ? 'bg-brand-primary text-white' : 'hover:bg-neutral-700'}`}>{t('single_prompt')}</button>
-                            <button onClick={() => setMode('sequence')} className={`w-full py-2 rounded-md transition-colors ${mode === 'sequence' ? 'bg-brand-primary text-white' : 'hover:bg-neutral-700'}`}>{t('project_sequence')}</button>
+                        <div className="glass-effect rounded-lg p-1.5 inline-flex space-x-1 w-full">
+                            <button onClick={() => setMode('single')} className={`flex-1 py-3 rounded-lg font-semibold transition-all duration-300 ${mode === 'single' ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-glow' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'}`}>{t('single_prompt')}</button>
+                            <button onClick={() => setMode('sequence')} className={`flex-1 py-3 rounded-lg font-semibold transition-all duration-300 ${mode === 'sequence' ? 'bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-glow' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'}`}>{t('project_sequence')}</button>
                         </div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div>
                            <label htmlFor="generator" className="block text-sm font-medium text-neutral-300 mb-2">{t('generator_label')}</label>
-                           <select id="generator" value={selectedGenerator} onChange={e => setSelectedGenerator(e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition">
+                           <select id="generator" value={selectedGenerator} onChange={e => setSelectedGenerator(e.target.value)} className="input-modern w-full">
                                {currentGenerators.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                            </select>
                         </div>
                         {mode === 'sequence' ? (
                             <div>
                                 <label htmlFor="prompt-count" className="block text-sm font-medium text-neutral-300 mb-2">{t('number_of_prompts_label')}</label>
-                                <input type="number" id="prompt-count" value={promptCount} onChange={e => setPromptCount(Math.max(2, parseInt(e.target.value, 10)))} min="2" max="10" className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition" />
+                                <input type="number" id="prompt-count" value={promptCount} onChange={e => setPromptCount(Math.max(2, parseInt(e.target.value, 10)))} min="2" max="10" className="input-modern w-full" />
                             </div>
                         ) : (
                             <div>
                                <label htmlFor="category" className="block text-sm font-medium text-neutral-300 mb-2">{activeTab === 'audio' ? t('genre_label') : t('category_label')}</label>
-                               <select id="category" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 rounded-md p-3 text-white focus:ring-brand-primary focus:border-brand-primary transition">
+                               <select id="category" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="input-modern w-full">
                                    {currentCategories.map(c => <option key={c} value={c}>{t(c as any)}</option>)}
                                </select>
                             </div>
@@ -372,29 +377,30 @@ export const PromptGenerator: React.FC<PromptGeneratorProps> = ({ remixState, cl
                         </div>
                     )}
                     
-                    <button onClick={handleGenerate} disabled={isLoading || isAnalyzingImage} className="w-full bg-brand-primary text-white py-3 rounded-md font-semibold text-lg hover:bg-brand-secondary transition-colors disabled:bg-neutral-600 disabled:cursor-not-allowed">
+                    <button onClick={handleGenerate} disabled={isLoading || isAnalyzingImage} className="btn-primary w-full text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
                         {isLoading ? t('generating_button') : t('generate_button')}
                     </button>
                 </div>
                 
                 {(isLoading || generatedPrompts.length > 0) && (
-                    <div className="mt-10">
-                        <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700">
-                            <h2 className="text-xl font-semibold mb-4">{mode === 'sequence' ? t('ai_result_sequence_title') : t('ai_result_title')}</h2>
+                    <div className="mt-10 animate-slide-up">
+                        <div className="card-modern">
+                            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">{mode === 'sequence' ? t('ai_result_sequence_title') : t('ai_result_title')}</h2>
                             {isLoading && generatedPrompts.length === 0 ? (
                                 <div className="animate-pulse space-y-3">
-                                    <div className="h-4 bg-neutral-700 rounded w-full"></div>
-                                    <div className="h-4 bg-neutral-700 rounded w-5/6"></div>
+                                    <div className="h-4 bg-neutral-700/50 rounded w-full"></div>
+                                    <div className="h-4 bg-neutral-700/50 rounded w-5/6"></div>
+                                    <div className="h-4 bg-neutral-700/50 rounded w-4/6"></div>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                     <div className="space-y-6">
                                         {generatedPrompts.map((prompt, index) => (
-                                            <div key={index} className="bg-neutral-900 p-4 rounded-md">
-                                                {mode === 'sequence' && <h3 className="font-semibold text-brand-light mb-2">{activeTab === 'audio' ? t('track_prefix') : t('scene_prefix')} {index + 1}</h3>}
-                                                <p className="text-neutral-200 whitespace-pre-wrap">{prompt}</p>
-                                                <div className="mt-3">
-                                                    <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm bg-neutral-700 px-3 py-1.5 rounded-md hover:bg-neutral-600 transition-colors">
+                                            <div key={index} className="glass-effect p-5 rounded-xl hover:border-brand-primary/50 transition-all">
+                                                {mode === 'sequence' && <h3 className="font-bold text-brand-light mb-3 text-lg">{activeTab === 'audio' ? t('track_prefix') : t('scene_prefix')} {index + 1}</h3>}
+                                                <p className="text-neutral-200 whitespace-pre-wrap leading-relaxed">{prompt}</p>
+                                                <div className="mt-4 pt-4 border-t border-neutral-700/50">
+                                                    <button onClick={() => handleCopy(prompt, index)} className="flex items-center space-x-2 text-sm glass-effect px-4 py-2 rounded-lg hover:bg-brand-primary/20 transition-all duration-300 hover:scale-105">
                                                         {copiedIndex === index ? <CheckIcon className="w-4 h-4 text-green-400" /> : <ClipboardIcon className="w-4 h-4" />}
                                                         <span>{copiedIndex === index ? t('copied_button') : t('copy_button')}</span>
                                                     </button>

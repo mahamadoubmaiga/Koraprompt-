@@ -1,3 +1,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-neutral-700;
+  }
+  
+  body {
+    @apply antialiased;
+    background: linear-gradient(135deg, #0A0A0F 0%, #111827 50%, #1F2937 100%);
+    background-attachment: fixed;
+  }
+  
+  ::selection {
+    @apply bg-brand-primary/30 text-white;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-neutral-800/40 backdrop-blur-lg border border-neutral-700/50;
+  }
+  
+  .card-gradient {
+    background: linear-gradient(145deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.9) 100%);
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-glow-lg;
+    background-size: 200% 200%;
+  }
+  
+  .btn-primary:hover {
+    animation: gradient 3s ease infinite;
+  }
+  
+  .btn-secondary {
+    @apply bg-neutral-800/80 backdrop-blur-sm text-white font-semibold px-6 py-3 rounded-lg border border-neutral-700 hover:border-brand-primary transition-all duration-300 hover:shadow-card-hover;
+  }
+  
+  .input-modern {
+    @apply bg-neutral-800/50 backdrop-blur-sm border border-neutral-700 rounded-lg p-3 text-white placeholder-neutral-500 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all duration-300;
+  }
+  
+  .card-modern {
+    @apply bg-neutral-800/60 backdrop-blur-sm rounded-xl border border-neutral-700/50 p-6 transition-all duration-300 hover:border-brand-primary/50 hover:shadow-card-hover;
+  }
+}
